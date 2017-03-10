@@ -52,14 +52,14 @@ private:
     Deleter deleter;
 };
 
+void close_clipboard_wrapper(BOOL) { CloseClipboard(); }
+
 ////////////////////////////////////////////////////////////////////////////////
 } // namespace detail
 namespace {
 ////////////////////////////////////////////////////////////////////////////////
 
 #ifdef _WIN32
-
-void close_clipboard_wrapper(BOOL) { CloseClipboard(); }
 
 bool set_clipboard_text(const std::string& text)
 {
@@ -70,7 +70,7 @@ bool set_clipboard_text(const std::string& text)
     memcpy(GlobalLock(mem), text.c_str(), len);
     GlobalUnlock(mem);
 
-    detail::Handle<BOOL, void> cb{OpenClipboard(nullptr), close_clipboard_wrapper};
+    detail::Handle<BOOL, void> cb{OpenClipboard(nullptr), detail::close_clipboard_wrapper};
     if (!cb) return false;
 
     EmptyClipboard();
@@ -81,7 +81,7 @@ bool set_clipboard_text(const std::string& text)
 
 std::string get_clipboard_text()
 {
-    detail::Handle<BOOL, void> cb{OpenClipboard(nullptr), close_clipboard_wrapper};
+    detail::Handle<BOOL, void> cb{OpenClipboard(nullptr), detail::close_clipboard_wrapper};
     if (cb)
     {
         if (auto data = GetClipboardData(CF_TEXT))

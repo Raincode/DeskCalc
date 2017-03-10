@@ -103,7 +103,7 @@ bool Calculator::process_command(const std::string& command)
     else if (cmd == "restart")
     {
         cls();
-        mParser.clear_vars();
+        parser.clear_vars();
         show_intro();
         return true;
     }
@@ -115,19 +115,19 @@ bool Calculator::process_command(const std::string& command)
     }
     else if (cmd == "clearvar")
     {
-        mParser.clear_vars();
+        parser.clear_vars();
         return true;
     }
     else if (cmd == "clearall")
     {
         cls();
         std::cout << intro;
-        mParser.clear_vars();
+        parser.clear_vars();
         return true;
     }
     else if (cmd == "ls")
     {
-        auto vars = mParser.get_vars();
+        auto vars = parser.get_vars();
         for (const auto& v : vars)
         {
             if (v.first != "_" && v.first != "Ans") std::cout << v.first << " = " << v.second << '\n';
@@ -136,12 +136,12 @@ bool Calculator::process_command(const std::string& command)
     }
     else if (cmd == "copy")
     {
-        set_clipboard_text(util::to_string(mParser.get_var("_")));
+        set_clipboard_text(util::to_string(parser.get_var("_")));
         return true;
     }
     else if (cmd == "copy,")
     {
-        auto str = util::to_string(mParser.get_var("_"));
+        auto str = util::to_string(parser.get_var("_"));
         set_clipboard_text(util::european_format(str));
         return true;
     }
@@ -153,14 +153,14 @@ bool Calculator::process_command(const std::string& command)
     }
     else if (cmd == "quit" || cmd == "exit" || cmd == "close" || cmd == "end")
     {
-        mIsRunning = false;
+        is_running = false;
         return true;
     }
-    else if (mParser.isfunc(cmd))
+    else if (parser.isfunc(cmd))
     {   // Call function on last result when entered without argument
-        if (mParser.isvar("_"))
+        if (parser.isvar("_"))
         {
-            std::cout << mParser.get_func(cmd)(mParser.get_var("_")) << '\n';
+            std::cout << parser.get_func(cmd)(parser.get_var("_")) << '\n';
         }
         return true;
     }
@@ -173,7 +173,7 @@ void Calculator::run_cli()
 {
     static const std::string prompt {"> "};
     std::cout << prompt;
-    for (std::string line; mIsRunning && std::getline(std::cin, line) ;)
+    for (std::string line; is_running && std::getline(std::cin, line) ;)
     {
         try
         {
@@ -184,7 +184,7 @@ void Calculator::run_cli()
             std::cerr << e.what() << std::endl;
         }
 
-        if (mIsRunning) std::cout << prompt;
+        if (is_running) std::cout << prompt;
     }
 }
 
@@ -194,14 +194,14 @@ void Calculator::exec(const std::string& arg)
 {
     if (arg.size() && !process_command(arg))
     {
-        mParser.token_stream().set_input(arg);
-        while (mParser.parse_stmt())
+        parser.token_stream().set_input(arg);
+        while (parser.parse_stmt())
         {
-            if (mParser.hasResult())
+            if (parser.hasResult())
             {
-                mParser.set_var("_", mParser.result());
-                mParser.set_var("Ans", mParser.result());
-                std::cout << mParser.result() << '\n';
+                parser.set_var("_", parser.result());
+                parser.set_var("Ans", parser.result());
+                std::cout << parser.result() << '\n';
             }
         }
     }
@@ -211,16 +211,16 @@ void Calculator::exec(const std::string& arg)
 
 void Calculator::run(std::istream& input, std::ostream& os)
 {
-    mTokenStream.set_input(input);
+    token_stream.set_input(input);
     while (true)
     {
         try
         {
-            if (mParser.parse_stmt())
+            if (parser.parse_stmt())
             {
-                if (mParser.hasResult())
+                if (parser.hasResult())
                 {
-                    os << mParser.result() << '\n';
+                    os << parser.result() << '\n';
                 }
             }
             else break;

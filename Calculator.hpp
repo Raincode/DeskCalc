@@ -37,7 +37,7 @@ public:
     Calculator() = default;
 
     void run(std::istream& is, std::ostream& os=std::cout);
-    void run_cli(); // cli interaction is different from file etc.
+    void run_cli(); // cli interaction is different from what 'run' does
     void exec(const std::string& arg);
 
     void show_intro() const;
@@ -47,10 +47,10 @@ private:
 
     ////////////////////////////////////////////////////////////////////////////
     
-    TokenStream mTokenStream;
-    Context mParserContext;
-    Parser mParser {mTokenStream, &mParserContext};
-    bool mIsRunning {true};
+    TokenStream token_stream;
+    Context parser_context;
+    Parser parser {token_stream, &parser_context};
+    bool is_running {true};
 };
 
 ////////////////////////////////////////////////////////////////////////////////

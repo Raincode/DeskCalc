@@ -32,7 +32,7 @@ namespace util {
 namespace {
 ////////////////////////////////////////////////////////////////////////////////
 
-std::string replaceAll(std::string str, const std::string& before, const std::string& after)
+std::string replace_all(std::string str, const std::string& before, const std::string& after)
 {
     size_t start_pos = 0;
     while((start_pos = str.find(before, start_pos)) != std::string::npos)

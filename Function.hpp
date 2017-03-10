@@ -31,12 +31,12 @@ namespace math {
 
 class Function {
 public:
-    Function(const std::string& t /* term */, const std::string& v /* var */, Context *c)
+    Function(const std::string& t, const std::string& v, Context *c)
         :term{t}, var{v}, context{c} { }
 
     double operator()(double arg) const
     {
-        auto expr = util::replaceAll(term, var, std::to_string(arg));
+        auto expr = util::replace_all(term, var, std::to_string(arg));
         TokenStream str(expr);
         static Parser p(str, context);
         return p.expr(true);
