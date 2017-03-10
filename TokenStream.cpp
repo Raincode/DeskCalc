@@ -20,6 +20,7 @@
 
 #include "TokenStream.hpp"
 
+#include <cctype>
 #include <iostream>
 #include <limits>
 #include <sstream>
