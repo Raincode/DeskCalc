@@ -50,11 +50,13 @@ private:
     Deleter deleter;
 };
 
+#ifdef _WIN32
 void close_clipboard_wrapper(BOOL) { CloseClipboard(); }
 Handle<BOOL, void> make_clipboard_handle()
 {
     return {OpenClipboard(nullptr), detail::close_clipboard_wrapper};
 }
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 } // namespace detail
