@@ -38,7 +38,7 @@ public:
     {
         auto expr = util::replace_all(term, var, std::to_string(arg));
         TokenStream str(expr);
-        static Parser p(str, context);
+        Parser p(str, context);
         return p.expr(true);
     }
 
