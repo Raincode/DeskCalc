@@ -69,10 +69,7 @@ bool set_clipboard_text(const std::string& text)
     GlobalUnlock(mem);
 
     detail::Handle<BOOL, void> cb{OpenClipboard(nullptr), detail::close_clipboard_wrapper};
-    if (!cb) return false;
-
-    EmptyClipboard();
-    if (!SetClipboardData(CF_TEXT, mem)) return false;
+    if (!cb || !EmptyClipboard() || !SetClipboardData(CF_TEXT, mem)) return false;
     mem.release();
     return true;
 }
