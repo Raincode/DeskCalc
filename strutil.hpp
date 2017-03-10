@@ -52,40 +52,6 @@ inline bool isvowel(char ch)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-constexpr unsigned char AE = static_cast<unsigned char>(142);
-constexpr unsigned char ae = static_cast<unsigned char>(132);
-constexpr unsigned char OE = static_cast<unsigned char>(153);
-constexpr unsigned char oe = static_cast<unsigned char>(148);
-constexpr unsigned char UE = static_cast<unsigned char>(154);
-constexpr unsigned char ue = static_cast<unsigned char>(129);
-constexpr unsigned char ss = static_cast<unsigned char>(225);
-
-std::string ger(std::string str, char fmt='%')
-{   // replaces all occurences of %aouAOU with äöüÄÖÜ
-    std::size_t pos = 0;
-    while ((pos = str.find(fmt)) != std::string::npos)
-    {
-        if (pos < str.size()-1)
-        {
-            char ch = str[pos + 1];
-            switch (ch) {
-            case 'a': ch = ae; break;
-            case 'o': ch = oe; break;
-            case 'u': ch = ue; break;
-            case 'A': ch = AE; break;
-            case 'O': ch = OE; break;
-            case 'U': ch = UE; break;
-            default:
-                break;
-            }
-            //str.replace(pos, 2, ch);
-        }
-    }
-    return str;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
 unsigned word_count(const std::string& str,
                     const std::function<bool(const std::string&)>& pred={})
 {   // counts all words in str (for which optional predicate applies)
@@ -96,15 +62,6 @@ unsigned word_count(const std::string& str,
             ++wc;
     return wc;
 }
-
-////////////////////////////////////////////////////////////////////////////////
-
-//static inline std::string read_alpha_str(std::istream& is, const std::string& extra_chars)
-//{   // reads characters until non-alpha character is encountered
-//    return read_alpha_str(is, [&extra_chars](char ch) {
-//        for (const auto& c : extra_chars) if (c == ch) return true; return false;
-//    });
-//}
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -168,31 +125,6 @@ std::string toupper(std::string str)
     for (auto& ch : str)
         ch = std::toupper(ch);
     return str;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-static const std::vector<std::string> Apostrophies {
-    "cant", "dont", "wont", "couldnt", "shouldnt", "wouldnt",
-    "im", "its", "whats", "thats"
-};
-
-std::string correct_apostrophy(const std::string& str)
-{
-    std::string result;
-    std::istringstream tokens{str};
-    std::string delim{""};
-    for (std::string word; tokens >> word; )
-    {
-        if (std::find(Apostrophies.begin(), Apostrophies.end(), tolower(word)) != Apostrophies.end())
-            result += delim + word.replace(word.size() - 1, 0, "'");
-        else if (word == "youre") result += "you're";
-        else if (word == "Youre") result += "You're";
-        else
-            result += delim + word;
-        delim = " ";
-    }
-    return result;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
