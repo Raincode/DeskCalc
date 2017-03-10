@@ -2,5 +2,7 @@ Parser:
     Parses mathematical expressions; Depens on TokenStream
 
 Calculator:
+    Wraps functionality of Parser to calculate expressions from file/command line or interactively
 
 TokenStream:
+    Reads input in terms of math tokens (operators, numbers, variables etc.)
