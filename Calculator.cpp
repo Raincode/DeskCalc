@@ -73,17 +73,17 @@ static std::string helptext{
 
 void Calculator::show_intro() const
 {
-    std::ifstream greeting{"intro.txt"};
-    if (!greeting)
-    {
+//    std::ifstream greeting{"intro.txt"};
+//    if (!greeting)
+//    {
         std::cout << intro;
-    }
-    else
-    {
-        for (std::string line; std::getline(greeting, line) ;)
-            std::cout << "                " << line << '\n';
-        std::cout << '\n';
-    }
+//    }
+//    else
+//    {
+//        for (std::string line; std::getline(greeting, line) ;)
+//            std::cout << "                " << line << '\n';
+//        std::cout << '\n';
+//    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
