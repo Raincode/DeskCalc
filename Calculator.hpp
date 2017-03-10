@@ -45,7 +45,8 @@ public:
 private:
     bool process_command(const std::string& input);
 
-private:
+    ////////////////////////////////////////////////////////////////////////////
+    
     TokenStream mTokenStream;
     Context mParserContext;
     Parser mParser {mTokenStream, &mParserContext};
