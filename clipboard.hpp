@@ -51,6 +51,10 @@ private:
 };
 
 void close_clipboard_wrapper(BOOL) { CloseClipboard(); }
+Handle<BOOL, void> make_clipboard_handle()
+{
+    return {OpenClipboard(nullptr), detail::close_clipboard_wrapper};
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 } // namespace detail
@@ -68,7 +72,7 @@ bool set_clipboard_text(const std::string& text)
     memcpy(GlobalLock(mem), text.c_str(), len);
     GlobalUnlock(mem);
 
-    detail::Handle<BOOL, void> cb{OpenClipboard(nullptr), detail::close_clipboard_wrapper};
+    auto cb = detail::make_clipboard_handle();
     if (!cb || !EmptyClipboard() || !SetClipboardData(CF_TEXT, mem)) return false;
     mem.release();  // SetClipboardData takes ownership if successful
     return true;
@@ -76,8 +80,7 @@ bool set_clipboard_text(const std::string& text)
 
 std::string get_clipboard_text()
 {
-    detail::Handle<BOOL, void> cb{OpenClipboard(nullptr), detail::close_clipboard_wrapper};
-    if (cb)
+    if (auto cb = detail::make_clipboard_handle())
     {
         if (auto data = GetClipboardData(CF_TEXT))
         {
