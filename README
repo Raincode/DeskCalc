@@ -1,0 +1,8 @@
+The mps::math library collection offers entities for parsing mathematical expressions
+and functionality relying on such.
+
+dcalc features:
+    - Operators: + - * / ( ) % (modulo) ^ (pow) || (parallel resistors)
+    - Variables
+    - Functions (built in, user-defined: "fn <name>(<var>) = <term>"
+    - Convenient last result storage in _, as well as copying last result to clipboard with copy command.
