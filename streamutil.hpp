@@ -20,54 +20,65 @@
 #pragma once
 ////////////////////////////////////////////////////////////////////////////////
 
+#include <iostream>
+#include <limits>
 #include <string>
+#include <sstream>
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace mps {
-namespace math {
+namespace util {
 ////////////////////////////////////////////////////////////////////////////////
 
-enum class Kind : char {
-    Number, String, Print, End,
-    Plus='+', Minus='-', Mul='*', Div='/', Mod='%',
-    Pow='^', Fac='!', LParen='(', RParen=')', Assign='=',
-    Parallel, /* Range, */ Invalid
-};
+template<typename T>
+static inline T get_num(const std::string& prompt)
+{   // Gets a number of type T from std::cin, rejecting input which is nothing but a number
+    std::cout << prompt;
+    std::string input;
 
-////////////////////////////////////////////////////////////////////////////////
+    while (!trim(input).size())  // skip empty input lines
+        if (!std::getline(std::cin, input))  // EOF or cin.bad()
+            throw std::runtime_error("No Input");
 
-struct Token {
-    explicit Token(Kind k)
-        :kind{k} { }
-    Token(Kind k, const std::string& str)
-        :kind{k}, strVal{str} { }
-    Token(Kind k, double num)
-        :kind{k}, numVal{num} { }
-
-    Kind kind;
-    double numVal{};
-    std::string strVal;
-};
-
-////////////////////////////////////////////////////////////////////////////////
-
-inline std::string tokstr(Token t)
-{
-    switch (t.kind) {
-    case Kind::Number:
-        return std::to_string(t.numVal);
-    case Kind::String:
-        return t.strVal;
-    case Kind::Print:
-        return "Print";
-    case Kind::End:
-        return "End";
-    default:
-        return { static_cast<char>(t.kind) };
+    std::istringstream stream{ input };
+    T n;
+    if (stream >> n)
+    {   // test for remaining characters
+        char ch;
+        if (!(stream >> ch)) return n;
     }
+    std::cout << "Format Error.\n";
+    return get_num<T>(prompt);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-}  // namespace math
-}  // namespace mps
+
+template<typename T>
+static inline T get_num(const std::string& prompt, T min, T max)
+{   // get_num only accepting numbers in range [min;max]
+    T n = get_num<T>(prompt);
+    while (n < min || n > max)
+    {
+        std::cerr << "Not in range [" << min << ';' << max << "]\n";
+        n = get_num<T>(prompt);
+    }
+    return n;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+static inline void keep_window_open()
+{
+    std::cout << "Press <RETURN> to close this window...";
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+using getint = get_num<int>;
+using get_double = get_num<double>;
+
+////////////////////////////////////////////////////////////////////////////////
+}  // namespace util
+} // namespace mps
 ////////////////////////////////////////////////////////////////////////////////
