@@ -70,6 +70,10 @@ static std::string helptext{
      "fn\t\tDefine functions; usage: fn name(var) = term\n\n"
 };
 
+struct Warning {  // TODO: remove code duplication of Warning
+    Warning(const std::string& msg) { std::cout << msg; }
+};
+
 void Calculator::show_intro() const
 {
 //    std::ifstream greeting{"intro.txt"};
@@ -83,6 +87,10 @@ void Calculator::show_intro() const
 //            std::cout << "                " << line << '\n';
 //        std::cout << '\n';
 //    }
+    static Warning w{
+        "Copyright (C) 2017  Matthias Stauber\n"
+        "This program comes with ABSOLUTELY NO WARRANTY;\n"
+    };
 }
 
 ////////////////////////////////////////////////////////////////////////////////

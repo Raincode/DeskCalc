@@ -200,10 +200,7 @@ const Func& Parser::get_func(const std::string& name) const
 ////////////////////////////////////////////////////////////////////////////////
 
 struct Warning {
-    Warning(const std::string& msg)
-    {
-        std::cout << msg;
-    }
+    Warning(const std::string& msg) { std::cout << msg; }
 };
 
 double Parser::term(bool get)

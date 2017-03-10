@@ -1,4 +1,5 @@
 Parser:
+    Parses mathematical expressions; Depens on TokenStream
 
 Calculator:
 
