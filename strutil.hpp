@@ -20,6 +20,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #include <algorithm>
+#include <cctype>
 #include <iostream>
 #include <functional>
 #include <string>
@@ -139,7 +140,8 @@ std::string strip_punctuation(std::string str)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-std::string to_string(const auto& value)
+template<typename T>
+std::string to_string(const T& value)
 {
     std::ostringstream os;
     os << value;
