@@ -1,0 +1,8 @@
+﻿  SymbolTable_Test.cpp
+c:\users\matthias\programming\cpp\vs17\deskcalc\test\symboltable_test.cpp(2): fatal error C1083: Datei (Include) kann nicht geöffnet werden: "SymbolTable.hpp": No such file or directory
+  Parser_Test.cpp
+c:\users\matthias\programming\cpp\vs17\deskcalc\test\parser_test.cpp(3): fatal error C1083: Datei (Include) kann nicht geöffnet werden: "Parser.hpp": No such file or directory
+  main.cpp
+  Lexer_Test.cpp
+c:\users\matthias\programming\cpp\vs17\deskcalc\test\lexer_test.cpp(3): fatal error C1083: Datei (Include) kann nicht geöffnet werden: "Lexer.hpp": No such file or directory
+  Code wird generiert...
