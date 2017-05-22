@@ -1,10 +1,14 @@
 #include <iostream>
 #include <stdexcept>
 
-int main()
+#include "Calculator.hpp"
+
+int main(int argc, char* argv[])
 try
 {
-
+	Calculator calc;
+	calc.run_cli();
+	return 0;
 }
 catch (std::runtime_error& e)
 {
