@@ -45,19 +45,14 @@ namespace Lexer {
 		set_input(new std::istringstream{ str });
 	}
 
-	char TokenStream::readch()
+	Token TokenStream::get()
 	{
 		char ch;
 		do {
-			if (!input || !input->get(ch)) return 0;
-		} while (std::isspace(ch) && ch != '\n');
-		return ch;
-	}
-
-	Token TokenStream::get()
-	{
-		char ch{ readch() };
-		if (!ch) return ct = { Kind::End };
+			if (!input || !input->get(ch)) {
+				return ct = { Kind::End };
+			}
+		} while (std::isspace(static_cast<unsigned char>(ch)) && ch != '\n');
 
 		switch (ch) {
 		case '\n':
@@ -89,7 +84,7 @@ namespace Lexer {
 			return ct = parse_identifier(ch);
 		}
 		while (ct.kind != Kind::Print) get();
-		throw std::runtime_error{ "Bad Token: " + ch };
+		throw std::runtime_error{ "Bad Token" };
 	}
 
 	const Token& TokenStream::current() const
@@ -112,16 +107,19 @@ namespace Lexer {
 
 	Token TokenStream::parse_identifier(char ch)
 	{
-		if (std::isalpha(ch) || ch == '_') {
+		if (std::isalpha(static_cast<unsigned char>(ch)) || ch == '_') {
 			std::string s{ ch };
-			while (input->get(ch) && (std::isalnum(ch) || ch == '_'))
+			while (input->get(ch) && (std::isalnum(ch) || ch == '_')) {
 				s += ch;
+			}
 			input->unget();
 			if (s == "div") return { Kind::FloorDiv };
 			if (s == "mod") return { Kind::Mod };
 			return { Kind::String, s };
 		}
-		else throw std::runtime_error{ "Bad Token: " + ch };
+		else {
+			throw std::runtime_error{ "Bad Token" };
+		}
 	}
 
 	void TokenStream::cleanup()

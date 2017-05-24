@@ -23,7 +23,6 @@ namespace Lexer {
 		const Token& current() const;
 
 	private:
-		char readch();
 		void cleanup();
 		Token parse_identifier(char firstChar);
 		Token parse_double_op(char expected, Kind onSuccess, Kind onFailure);
