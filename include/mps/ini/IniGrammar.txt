@@ -1,3 +1,0 @@
-
-value = string | integer | double ;
-comment = ( ';' | '#' ) , ? rest of line ? ;
