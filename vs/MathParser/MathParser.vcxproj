@@ -123,6 +123,9 @@
     <ClCompile Include="..\..\src\Parser.cpp" />
     <ClCompile Include="..\..\src\SymbolTable.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="Grammar.txt" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

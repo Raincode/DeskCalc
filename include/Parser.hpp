@@ -22,6 +22,7 @@ public:
 private:
 	Complex expr();
 	Complex term();
+	Complex pow();
 	Complex prim();
 
 	bool consume(Kind kind);
@@ -40,4 +41,5 @@ private:
 };
 
 Complex safe_div(Complex left, Complex right);
+unsigned factorial(int n);
 

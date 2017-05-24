@@ -6,6 +6,8 @@
 #include "mps/str_util.hpp"
 #include "mps/console_util.hpp"
 
+#include "Warning.hpp"
+
 using namespace std;
 
 Calculator::Calculator()
@@ -24,7 +26,7 @@ void Calculator::run_cli()
 	show_intro();
 	cout << prompt;
 
-	for (string s; isRunning && getline(cin, s) ;) {
+	for (string s; isRunning && getline(cin, s); ) {
 		if (s.size() && !handle_cmd(s)) {
 			try {
 				parser.parse(s);
@@ -34,13 +36,11 @@ void Calculator::run_cli()
 				std::cerr << e.what() << '\n';
 			}
 		}
-		if (isRunning) cout << prompt;
+		if (isRunning) {
+			cout << prompt;
+		}
 	}
 }
-
-struct Warning {
-	Warning(const string& msg) { std::cout << msg; }
-};
 
 void Calculator::show_intro() const
 {
@@ -49,11 +49,14 @@ void Calculator::show_intro() const
 
 	ifstream ifs{ "intro.txt" };
 	if (ifs) {
-		for (string s; getline(ifs, s) ;)
+		for (string s; getline(ifs, s);) {
 			std::cout << "                " << s << '\n';
+		}
 		std::cout << '\n';
 	}
-	else cout << intro;
+	else {
+		cout << intro;
+	}
 
 	static Warning w{ "Copyright (C) 2017  Matthias Stauber\n"
 					  "This program comes with ABSOLUTELY NO WARRANTY\n" };

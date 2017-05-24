@@ -1,9 +1,12 @@
 #include "Parser.hpp"
 
+#include <cmath>
 #include <iostream>
 
 #include <mps/stl_util.hpp>
 #include <mps/str_util.hpp>
+
+#include "Warning.hpp"
 
 Parser::Parser(Lexer::TokenStream& ts)
 	: ts{ ts }
@@ -52,47 +55,63 @@ Complex Parser::expr()
 	}
 }
 
-void Parser::check_open_paren()
-{
-	if (!lparenCount) {
-		lparenCount = 0;
-		throw std::runtime_error{ "Unexpected Token: )" };
-	}
-}
-
-void Parser::check_all_paren_closed()
-{
-	if (lparenCount) {
-		lparenCount = 0;
-		throw std::runtime_error{ "Expected Token: )" };
-	}
-}
-
-void Parser::consume_closing_paren()
-{
-	while (consume(Kind::RParen)) {
-		check_open_paren();
-		--lparenCount;
-	}
-}
-
 Complex Parser::term()
+{
+	auto left = pow();
+	for (;;) {
+		if (consume(Kind::Mul)) {
+			left *= pow();
+		}
+		else if (consume(Kind::Div)) {
+			left = safe_div(left, pow());
+		}
+		else if (consume(Kind::Parallel)) {
+			auto right = pow();
+			if ((left.imag() && right.imag()) ||
+				(left.real() > 0 && right.real() > 0)) {
+				left = left * right / (left + right);
+			}
+			else {
+				throw std::runtime_error{ "Resistors must be greater than 0" };
+			}
+		}
+		else {
+			return left;
+		}
+	}
+}
+
+unsigned factorial(int n)
+{
+	if (n < 0) {
+		throw std::runtime_error{ "Factorial not defined for negative numbers" };
+	}
+	else if (n == 1) {
+		return 0;
+	}
+	else {
+		unsigned result{ 1 };
+		for (int i = 2; i <= n; ++i) {
+			result *= i;
+		}
+		return result;
+	}
+}
+
+Complex Parser::pow()
 {
 	auto left = prim();
 	for (;;) {
-		if (consume(Kind::Mul)) {
-			left *= prim();
+		if (consume(Kind::Pow)) {
+			return std::pow(left, pow());
 		}
-		else if (consume(Kind::Div)) {
-			left = safe_div(left, prim());
-		}
-		else if (consume(Kind::Parallel)) {
-			auto right = term();
-			if ((left.imag() && right.imag()) ||
-				(left.real() > 0 && right.real() > 0)) {
-				return left * right / (left + right);
+		else if (consume(Kind::Fac)) {
+			static Warning w{ "Note: Factorial might overflow for larger numbers" };
+			double trunc = std::trunc(left.real());
+			if (!left.imag() && trunc == left.real() && trunc >= 0) {
+				return factorial(static_cast<int>(trunc));
 			}
-			throw std::runtime_error{ "Resistors must be greater than 0" };
+			throw std::runtime_error{ "Factorial only defined for N and 0" };
 		}
 		else {
 			return left;
@@ -121,7 +140,34 @@ Complex Parser::prim()
 		auto val = expr();
 		return val;
 	}
+	else if (consume(Kind::Minus)) {
+		return -prim();
+	}
 	throw std::runtime_error{ "Unexpected Token " + mps::str::to_string(ts.current()) };
+}
+
+void Parser::check_open_paren()
+{
+	if (!lparenCount) {
+		lparenCount = 0;
+		throw std::runtime_error{ "Unexpected Token: )" };
+	}
+}
+
+void Parser::check_all_paren_closed()
+{
+	if (lparenCount) {
+		lparenCount = 0;
+		throw std::runtime_error{ "Expected Token: )" };
+	}
+}
+
+void Parser::consume_closing_paren()
+{
+	while (consume(Kind::RParen)) {
+		check_open_paren();
+		--lparenCount;
+	}
 }
 
 bool Parser::consume(Kind kind)
