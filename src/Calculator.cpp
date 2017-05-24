@@ -3,8 +3,8 @@
 #include <fstream>
 #include <iostream>
 
-#include <mps/str_util.hpp>
-#include <mps/console_util.hpp>
+#include "mps/str_util.hpp"
+#include "mps/console_util.hpp"
 
 using namespace std;
 
