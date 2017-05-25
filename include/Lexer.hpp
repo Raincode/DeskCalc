@@ -2,6 +2,7 @@
 
 #include <istream>
 
+#include "ErrorReporter.hpp"
 #include "Token.hpp"
 
 namespace Lexer {
@@ -26,10 +27,12 @@ namespace Lexer {
 		void cleanup();
 		Token parse_identifier(char firstChar);
 		Token parse_double_op(char expected, Kind onSuccess, Kind onFailure);
+		Token identifier_to_token(const std::string& str) const;
 
 		Token ct{ Kind::End };
 		std::istream* input;
 		bool ownsInput;
+		ErrorReporter error;
 	};
 }	/* namespace Lexer */
 

@@ -56,6 +56,8 @@ namespace Lexer {
 
 		switch (ch) {
 		case ';':
+		case '\n':
+			return ct = { Kind::Print };
 		case '+':
 		case '-':
 		case '%':
@@ -84,7 +86,7 @@ namespace Lexer {
 			return ct = parse_identifier(ch);
 		}
 		while (ct.kind != Kind::Print) get();
-		throw std::runtime_error{ "Bad Token" };
+		error("Bad Token ", ch);
 	}
 
 	const Token& TokenStream::current() const
@@ -101,7 +103,7 @@ namespace Lexer {
 			input->unget();
 			if (onFailure != Kind::Invalid)
 				return { onFailure };
-			throw std::runtime_error{ "Expected Token: " + second };
+			error("Expected Token: ", second);
 		}
 	}
 
@@ -109,16 +111,27 @@ namespace Lexer {
 	{
 		if (std::isalpha(static_cast<unsigned char>(ch)) || ch == '_') {
 			std::string s{ ch };
-			while (input->get(ch) && (std::isalnum(ch) || ch == '_')) {
+			while (input->get(ch) && (std::isalnum(static_cast<unsigned char>(ch)) || ch == '_')) {
 				s += ch;
 			}
 			input->unget();
-			if (s == "div") return { Kind::FloorDiv };
-			if (s == "mod") return { Kind::Mod };
-			return { Kind::String, s };
+			return identifier_to_token(s);
 		}
 		else {
-			throw std::runtime_error{ "Bad Token" };
+			error("Bad Token ", ch);
+		}
+	}
+
+	Token TokenStream::identifier_to_token(const std::string& str) const
+	{
+		if (str == "div") {
+			return { Kind::FloorDiv };
+		}
+		else if (str == "mod") {
+			return { Kind::Mod };
+		}
+		else {
+			return { Kind::String, str };
 		}
 	}
 

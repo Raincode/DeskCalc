@@ -17,7 +17,13 @@ Calculator::Calculator()
 
 void Calculator::run_file(const string& path)
 {
-
+	ifstream ifs{ path };
+	if (!ifs) {
+		cerr << "Unable to open file '" << path << "'\n";
+		return;
+	}
+	tokenStream.set_input(ifs);
+	calculate();
 }
 
 void Calculator::run_cli()
@@ -27,20 +33,27 @@ void Calculator::run_cli()
 	cout << prompt;
 
 	for (string s; isRunning && getline(cin, s); ) {
+		s = mps::str::trim(s);
 		if (s.size() && !handle_cmd(s)) {
-			try {
-				parser.parse(s);
-				parser.symbol_table().set_var("_", parser.result());
-				parser.symbol_table().set_var("ans", parser.result());
-				print_complex(cout, parser.result());
-			}
-			catch (runtime_error& e) {
-				std::cerr << e.what() << '\n';
-			}
+			tokenStream.set_input(s);
+			calculate();
 		}
 		if (isRunning) {
 			cout << prompt;
 		}
+	}
+}
+
+void Calculator::calculate()
+{
+	try {
+		parser.parse();
+		parser.symbol_table().set_var("_", parser.result());
+		parser.symbol_table().set_var("ans", parser.result());
+		print_complex(cout, parser.result());
+	}
+	catch (runtime_error& e) {
+		std::cerr << e.what() << '\n';
 	}
 }
 
@@ -93,6 +106,15 @@ void Calculator::register_commands()
 		};
 	commands["help"] =
 		[] { std::cout << helpText; };
+	commands["run"] =
+		[this] {
+			cout << "file: ";
+			string fname;
+			if (cin >> fname) {
+				cin.ignore(1);	// cin leaves '\n' in buffer
+				run_file(fname);
+			}
+		};
 }
 
 void print_complex(std::ostream& os, Complex num)
@@ -104,7 +126,7 @@ void print_complex(std::ostream& os, Complex num)
 	if (im) {
 		if (re) cout << re;
 		if (re && im > 0) cout << '+';
-		if (im != 1) std::cout << im;
+		if (im != 1 && im != -1) std::cout << im;
 		std::cout << 'i';
 	}
 	else {

@@ -19,6 +19,8 @@ private:
 	bool handle_cmd(const std::string& cmd);
 	void register_commands();
 
+	void calculate();
+
 	Lexer::TokenStream tokenStream;
 	Parser parser{ tokenStream };
 	std::map<std::string, std::function<void()>> commands;

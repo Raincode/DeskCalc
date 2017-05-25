@@ -16,7 +16,7 @@ Parser::Parser(Lexer::TokenStream& ts)
 	: ts{ ts }
 {
 	table.set_const("i", { 0, 1 });
-	table.set_const("pi", 3.1415926535897932385);
+	table.set_const("pi", std::acos(-1));
 	table.set_const("e", 2.7182818284590452354);
 
 	table.add_builtin_func("sin", MAKE_FUNC(std::sin));
@@ -32,6 +32,7 @@ Parser::Parser(Lexer::TokenStream& ts)
 	table.add_builtin_func("abs", MAKE_FUNC(std::abs));
 	table.add_builtin_func("norm", MAKE_FUNC(std::norm));
 	table.add_builtin_func("arg", MAKE_FUNC(std::arg));
+	table.add_builtin_func("exp", MAKE_FUNC(std::exp));
 
 	table.add_builtin_func("sqrt", MAKE_FUNC(std::sqrt));
 	table.add_builtin_func("ln", MAKE_FUNC(std::log));
@@ -146,13 +147,7 @@ Complex Parser::postfix()
 	auto left = prim();
 	for (;;) {
 		if (consume(Kind::Pow)) {
-			auto exp = postfix();
-			if (left.imag() || exp.imag()) {
-				return std::pow(left, postfix());
-			}
-			else {
-				return std::pow(left.real(), exp.real());
-			}
+			return std::pow(left, sign());
 		}
 		else if (consume(Kind::Fac)) {
 			static Warning w{ "Note: Factorial might overflow for larger numbers" };
@@ -191,30 +186,23 @@ Complex Parser::resolve_string_token()
 {
 	auto str = prevToken.str;
 	if (table.has_func(str)) {
-		if (consume(Kind::LParen)) {
-			if (peek(Kind::String)) {
-				if (table.has_var(ts.current().str)) {
-					return table.call_func(str, expr());
-				}
-			}
-			else {
-				return table.call_func(str, expr());
-			}
-		}
+		expect(Kind::LParen);
+		return table.call_func(str, expr());
+	}
+	else if (consume(Kind::Assign)) {
+		table.set_var(str, expr());
+		return table.value_of(str);
 	}
 	else if (table.has_var(str)) {
-		if (consume(Kind::Assign)) {
-			table.set_var(str, expr());
-		}
 		return table.value_of(str);
 	}
 	else if (consume(Kind::LParen)) {
-
+		error("Defining custom functions not implemented yet");
 	}
 	else {
 		error(str, " is undefined");
-		return 0; // silence warning
 	}
+	return 0; // silence warning
 }
 
 void Parser::check_open_paren()

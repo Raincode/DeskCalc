@@ -136,13 +136,23 @@ std::string read_alpha_str(std::istream& is, const std::function<bool(char)>& pr
 
 ////////////////////////////////////////////////////////////////////////////////
 
-std::string trim(const std::string& str)
-{   // removes leading and trailing whitespace
-    static const std::string ws{ " \t\r\n" };
-    auto first = str.find_first_not_of(ws);
+static const std::string ws{ " \t\r\n" };
+
+std::string rtrim(const std::string& str)
+{
     auto last = str.find_last_not_of(ws);
-    // handle pure whitespace
-    return first == std::string::npos ? "" : str.substr(first, last - first + 1);
+    return last == std::string::npos ? "" : str.substr(0, last + 1);
+}
+
+std::string ltrim(const std::string& str)
+{
+    auto first = str.find_first_not_of(ws);
+    return first == std::string::npos ? "" : str.substr(first, str.size());
+}
+
+std::string trim(const std::string& str)
+{
+    return rtrim(ltrim(str));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
