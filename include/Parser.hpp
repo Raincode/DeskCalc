@@ -9,8 +9,6 @@
 #include "Lexer.hpp"
 #include "SymbolTable.hpp"
 
-using Complex = std::complex<double>;
-
 class Parser {
 public:
 	explicit Parser(Lexer::TokenStream& lexer);
