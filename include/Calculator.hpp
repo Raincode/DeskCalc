@@ -9,22 +9,22 @@
 
 class Calculator {
 public:
-	Calculator();
+    Calculator();
 
-	void run_file(const std::string& path);
-	void run_cli();
+    void run_file(const std::string& path);
+    void run_cli();
 
 private:
-	void show_intro() const;
-	bool handle_cmd(const std::string& cmd);
-	void register_commands();
+    void show_intro() const;
+    bool handle_cmd(const std::string& cmd);
+    void register_commands();
 
-	void calculate();
+    void calculate();
 
-	Lexer::TokenStream tokenStream;
-	Parser parser{ tokenStream };
-	std::map<std::string, std::function<void()>> commands;
-	bool isRunning{ true };
+    Lexer::TokenStream tokenStream;
+    Parser parser{ tokenStream };
+    std::map<std::string, std::function<void()>> commands;
+    bool isRunning{ true };
 };
 
 void print_complex(std::ostream& os, Complex num);
