@@ -30,6 +30,8 @@ void Calculator::run_cli()
 		if (s.size() && !handle_cmd(s)) {
 			try {
 				parser.parse(s);
+				parser.symbol_table().set_var("_", parser.result());
+				parser.symbol_table().set_var("ans", parser.result());
 				print_complex(cout, parser.result());
 			}
 			catch (runtime_error& e) {

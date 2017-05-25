@@ -7,7 +7,7 @@ enum class Kind : char {
 	Number,
 	String,
 	Parallel,
-	Print = '\n',
+	Print = ';',
 
 	Plus = '+', Minus = '-', Mul = '*', Div = '/',
 	FloorDiv,
@@ -30,18 +30,25 @@ struct Token {
 	double num;
 };
 
+inline std::ostream& operator<<(std::ostream& os, Kind kind)
+{
+	switch (kind) {
+	case Kind::End: return os << "END";
+	case Kind::Number: return os << "NUMBER";
+	case Kind::String: return os << "STRING";
+	case Kind::Parallel: return os << "PARALLEL";
+	case Kind::Invalid: return os << "INVALID";
+	case Kind::Print: return os << "PRINT";
+	case Kind::FloorDiv: return os << "FLOORDIV";
+	default: return os << static_cast<char>(kind);
+	}
+}
+
 inline std::ostream& operator<<(std::ostream& os, const Token& token)
 {
 	switch (token.kind) {
-	case Kind::Number:
-		return os << token.num;
-	case Kind::String:
-		return os << token.str;
-	case Kind::Print:
-		return os << "PRINT";
-	case Kind::End:
-		return os << "END";
-	default:
-		return os << "OPERATOR " << static_cast<char>(token.kind);
+	case Kind::Number: return os << token.num;
+	case Kind::String: return os << token.str;
+	default: return os << token.kind;
 	}
 }

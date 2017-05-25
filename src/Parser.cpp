@@ -8,16 +8,46 @@
 
 #include "Warning.hpp"
 
+// https://stackoverflow.com/questions/12500411/setting-a-stdfunction-variable-to-refer-to-the-stdsin-function
+#define MAKE_FUNC(f) [] (const Complex& c) { return (f)(c); }
+#define MAKE_REAL_FUNC(f) [] (double d) { return (f)(d); }
+
 Parser::Parser(Lexer::TokenStream& ts)
 	: ts{ ts }
 {
-	table.set_const("i", {0, 1});
+	table.set_const("i", { 0, 1 });
 	table.set_const("pi", 3.1415926535897932385);
 	table.set_const("e", 2.7182818284590452354);
+
+	table.add_builtin_func("sin", MAKE_FUNC(std::sin));
+	table.add_builtin_func("cos", MAKE_FUNC(std::cos));
+	table.add_builtin_func("tan", MAKE_FUNC(std::tan));
+	table.add_builtin_func("asin", MAKE_FUNC(std::asin));
+	table.add_builtin_func("acos", MAKE_FUNC(std::acos));
+	table.add_builtin_func("atan", MAKE_FUNC(std::atan));
+	table.add_builtin_func("sinh", MAKE_FUNC(std::sinh));
+	table.add_builtin_func("cosh", MAKE_FUNC(std::cosh));
+	table.add_builtin_func("tanh", MAKE_FUNC(std::tanh));
+
+	table.add_builtin_func("abs", MAKE_FUNC(std::abs));
+	table.add_builtin_func("norm", MAKE_FUNC(std::norm));
+	table.add_builtin_func("arg", MAKE_FUNC(std::arg));
+
+	table.add_builtin_func("sqrt", MAKE_FUNC(std::sqrt));
+	table.add_builtin_func("ln", MAKE_FUNC(std::log));
+	table.add_builtin_func("log", MAKE_FUNC(std::log10));
+
+	table.add_builtin_real_func("floor", MAKE_REAL_FUNC(std::floor));
+	table.add_builtin_real_func("ceil", MAKE_REAL_FUNC(std::ceil));
+	table.add_builtin_real_func("round", MAKE_REAL_FUNC(std::round));
+	table.add_builtin_real_func("trunc", MAKE_REAL_FUNC(std::trunc));
+
+	error.set_cleanup_func([this] { lparenCount = 0; });
 }
 
 void Parser::parse()
 {
+	hasResult = true;
 	ts.get();
 	res = expr();
 }
@@ -57,19 +87,19 @@ Complex Parser::expr()
 
 Complex Parser::term()
 {
-	auto left = postfix();
+	auto left = sign();
 	for (;;) {
 		if (consume(Kind::Mul)) {
-			left *= postfix();
+			left *= sign();
 		}
 		else if (consume(Kind::Div)) {
-			left = safe_div(left, postfix());
+			left = safe_div(left, sign());
 		}
 		else if (consume(Kind::FloorDiv)) {
-			left = safe_floordiv(left, postfix());
+			left = safe_floordiv(left, sign());
 		}
 		else if (consume(Kind::Mod)) {
-			auto right = postfix();
+			auto right = sign();
 			if (!left.imag() && !right.imag()) {
 				auto left_trunc = std::trunc(left.real());
 				auto right_trunc = std::trunc(right.real());
@@ -83,7 +113,7 @@ Complex Parser::term()
 			}
 		}
 		else if (consume(Kind::Parallel)) {
-			auto right = postfix();
+			auto right = sign();
 			if ((left.imag() && right.imag()) ||
 				(left.real() > 0 && right.real() > 0)) {
 				left = left * right / (left + right);
@@ -98,12 +128,31 @@ Complex Parser::term()
 	}
 }
 
+Complex Parser::sign()
+{
+	if (consume(Kind::Plus)) {
+		return postfix();
+	}
+	else if (consume(Kind::Minus)) {
+		return -postfix();
+	}
+	else {
+		return postfix();
+	}
+}
+
 Complex Parser::postfix()
 {
 	auto left = prim();
 	for (;;) {
 		if (consume(Kind::Pow)) {
-			return std::pow(left, postfix());
+			auto exp = postfix();
+			if (left.imag() || exp.imag()) {
+				return std::pow(left, postfix());
+			}
+			else {
+				return std::pow(left.real(), exp.real());
+			}
 		}
 		else if (consume(Kind::Fac)) {
 			static Warning w{ "Note: Factorial might overflow for larger numbers" };
@@ -128,21 +177,44 @@ Complex Parser::prim()
 		return prevToken.num;
 	}
 	else if (consume(Kind::String)) {
-		auto str = prevToken.str;
+		return resolve_string_token();
+	}
+	else if (consume(Kind::LParen)) {
+		auto val = expr();
+		return val;
+	}
+	error("Unexpected Token ", ts.current());
+	return 0; // silence warning
+}
+
+Complex Parser::resolve_string_token()
+{
+	auto str = prevToken.str;
+	if (table.has_func(str)) {
+		if (consume(Kind::LParen)) {
+			if (peek(Kind::String)) {
+				if (table.has_var(ts.current().str)) {
+					return table.call_func(str, expr());
+				}
+			}
+			else {
+				return table.call_func(str, expr());
+			}
+		}
+	}
+	else if (table.has_var(str)) {
 		if (consume(Kind::Assign)) {
 			table.set_var(str, expr());
 		}
 		return table.value_of(str);
 	}
 	else if (consume(Kind::LParen)) {
-		++lparenCount;
-		auto val = expr();
-		return val;
+
 	}
-	else if (consume(Kind::Minus)) {
-		return -prim();
+	else {
+		error(str, " is undefined");
+		return 0; // silence warning
 	}
-	error("Unexpected Token ", ts.current());
 }
 
 void Parser::check_open_paren()
@@ -173,6 +245,9 @@ bool Parser::consume(Kind kind)
 {
 	if (ts.current().kind == kind) {
 		prevToken = ts.current();
+		if (kind == Kind::LParen) {
+			++lparenCount;
+		}
 		ts.get();
 		return true;
 	}

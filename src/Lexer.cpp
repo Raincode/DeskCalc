@@ -55,7 +55,7 @@ namespace Lexer {
 		} while (std::isspace(static_cast<unsigned char>(ch)) && ch != '\n');
 
 		switch (ch) {
-		case '\n':
+		case ';':
 		case '+':
 		case '-':
 		case '%':

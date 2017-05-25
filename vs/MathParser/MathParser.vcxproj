@@ -113,6 +113,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\include\ErrorReporter.hpp" />
     <ClInclude Include="..\..\include\Lexer.hpp" />
     <ClInclude Include="..\..\include\Parser.hpp" />
     <ClInclude Include="..\..\include\SymbolTable.hpp" />
