@@ -115,13 +115,16 @@
   <ItemGroup>
     <ClInclude Include="..\..\include\ErrorReporter.hpp" />
     <ClInclude Include="..\..\include\Function.hpp" />
-    <ClInclude Include="..\..\include\Lexer.hpp" />
+    <ClInclude Include="..\..\include\TokenStream.hpp" />
+    <ClInclude Include="..\..\include\math_util.hpp" />
     <ClInclude Include="..\..\include\Parser.hpp" />
     <ClInclude Include="..\..\include\SymbolTable.hpp" />
     <ClInclude Include="..\..\include\Token.hpp" />
+    <ClInclude Include="..\..\include\types.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\src\Lexer.cpp" />
+    <ClCompile Include="..\..\src\TokenStream.cpp" />
+    <ClCompile Include="..\..\src\math_util.cpp" />
     <ClCompile Include="..\..\src\Parser.cpp" />
     <ClCompile Include="..\..\src\SymbolTable.cpp" />
   </ItemGroup>

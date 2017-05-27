@@ -4,7 +4,6 @@
 #include <map>
 #include <string>
 
-#include "Lexer.hpp"
 #include "Parser.hpp"
 
 class Calculator {
@@ -19,10 +18,8 @@ private:
     bool handle_cmd(const std::string& cmd);
     void register_commands();
 
-    void calculate();
-
-    Lexer::TokenStream tokenStream;
-    Parser parser{ tokenStream };
+    SymbolTable symbolTable;
+    Parser parser;
     std::map<std::string, std::function<void()>> commands;
     bool isRunning{ true };
 };

@@ -3,8 +3,10 @@
 #include "Parser.hpp"
 
 TEST_CASE("Parser Test", "[Parser]") {
-    Lexer::TokenStream ts;
-    Parser parser{ ts };
+    SymbolTable table;
+    table.add_default_funcs();
+    table.add_constants();
+    Parser parser{ table };
 
     REQUIRE_NOTHROW(parser.parse("1 + 2*(3 + 4) + 5*pi - pi*e / (1 + 27*2 + 3) - 5"));
     REQUIRE((parser.result().real() - 25.5607) < 10e-3);

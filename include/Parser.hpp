@@ -6,18 +6,22 @@
 #include <string>
 
 #include "ErrorReporter.hpp"
-#include "Lexer.hpp"
+#include "TokenStream.hpp"
 #include "SymbolTable.hpp"
 
 class Parser {
 public:
-    explicit Parser(Lexer::TokenStream& lexer);
+    Parser(SymbolTable& table);
 
     void parse();
+    void parse(std::istream& is);
     void parse(const std::string& input);
+
     Complex result() const { return res; }
     bool has_result() const { return hasResult; }
+
     SymbolTable& symbol_table() { return table; }
+    void set_symbol_table(SymbolTable& t) { table = t; }
 
 private:
     Complex expr();
@@ -25,33 +29,20 @@ private:
     Complex sign();
     Complex postfix();
     Complex prim();
-
-    bool consume(Kind kind);
-    bool peek(Kind kind) const;
-    void expect(Kind kind);
-
     Complex resolve_string_token();
 
-    Token prevToken;
-    SymbolTable table;
-    Lexer::TokenStream& ts;
-    int lparenCount{};
+    bool peek(Kind kind) const;
+    bool consume(Kind kind);
+    void expect(Kind kind);
+
+    Token prevTok;
+    SymbolTable& table;
+    TokenStream ts;
+    ErrorReporter error;
+
     Complex res;
     bool hasResult{};
-    ErrorReporter error;
 };
 
-Complex safe_div(Complex left, Complex right);
-Complex safe_floordiv(Complex left, Complex right);
-Complex safe_mod(Complex left, Complex right);
-template<class T>
-T safe_mod(T left, T right)
-{
-    if (right) {
-        return left % right;
-    }
-    throw std::runtime_error{ "Divide by Zero" };
-}
-unsigned factorial(int n);
-Complex calc_Rparallel(Complex R1, Complex R2);
+
 

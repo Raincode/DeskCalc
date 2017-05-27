@@ -11,8 +11,11 @@
 using namespace std;
 
 Calculator::Calculator()
+    : parser{ symbolTable }
 {
     register_commands();
+    symbolTable.add_constants();
+    symbolTable.add_default_funcs();
 }
 
 void Calculator::run_file(const string& path)
@@ -22,8 +25,7 @@ void Calculator::run_file(const string& path)
         cerr << "Unable to open file '" << path << "'\n";
         return;
     }
-    tokenStream.set_input(ifs);
-    calculate();
+    parser.parse(ifs);
 }
 
 void Calculator::run_cli()
@@ -35,27 +37,21 @@ void Calculator::run_cli()
     for (string s; isRunning && getline(cin, s); ) {
         s = mps::str::trim(s);
         if (s.size() && !handle_cmd(s)) {
-            tokenStream.set_input(s);
-            calculate();
+            try {
+                parser.parse(s);
+                if (parser.has_result()) {
+                    parser.symbol_table().set_var("_", parser.result());
+                    parser.symbol_table().set_var("ans", parser.result());
+                    print_complex(cout, parser.result());
+                }
+            }
+            catch (runtime_error& e) {
+                std::cerr << e.what() << '\n';
+            }
         }
         if (isRunning) {
             cout << prompt;
         }
-    }
-}
-
-void Calculator::calculate()
-{
-    try {
-        parser.parse();
-        if (parser.has_result()) {
-            parser.symbol_table().set_var("_", parser.result());
-            parser.symbol_table().set_var("ans", parser.result());
-            print_complex(cout, parser.result());
-        }
-    }
-    catch (runtime_error& e) {
-        std::cerr << e.what() << '\n';
     }
 }
 

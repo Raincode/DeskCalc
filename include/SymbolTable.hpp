@@ -4,14 +4,8 @@
 #include <functional>
 #include <map>
 #include <string>
-#include <vector>
 
-// #include "Function.hpp"
-
-using Complex = std::complex<double>;
-using ComplexFunc = std::function<Complex(const Complex&)>;
-using Args = std::vector<Complex>;
-using ComplexMultiFunc = std::function<Complex(const Args&)>;
+#include "types.hpp"
 
 class SymbolTable {
 public:
@@ -28,6 +22,9 @@ public:
     };
 
     SymbolTable() = default;
+
+    void add_default_funcs();
+    void add_constants();
 
     Complex value_of(const std::string& var);
     void set_var(const std::string& name, Complex value);
@@ -47,9 +44,9 @@ public:
 
 private:
     void set_value(const std::string& name, Var var);
-    void set_function(const std::string& name, Func func);
+    void set_function(const std::string& name, ComplexFunc func);
 
     std::map<std::string, Var> varTable;
-    std::map<std::string, Func> funcTable;
+    std::map<std::string, ComplexFunc> funcTable;
     std::map<std::string, ComplexMultiFunc> userFuncTable;
 };
