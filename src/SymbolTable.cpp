@@ -51,6 +51,14 @@ Complex SymbolTable::call_func(const std::string& name, Complex arg)
     return found->second.func(arg);
 }
 
+Complex SymbolTable::call_user_func(const std::string & name, const Args & args)
+{
+    auto found = userFuncTable.find(name);
+    if (found == end(userFuncTable))
+        throw std::runtime_error{ name + " is undefined." };
+    return found->second(args);
+}
+
 void SymbolTable::add_builtin_func(const std::string& name, ComplexFunc func)
 {
     set_function(name, { func, Func::BuiltIn });
@@ -72,9 +80,23 @@ void SymbolTable::set_custom_func(const std::string& name, ComplexFunc func)
     set_function(name, { func, Func::Custom });
 }
 
+void SymbolTable::set_custom_func(const std::string& name, ComplexMultiFunc func)
+{
+    auto found = userFuncTable.find(name);
+    auto found2 = funcTable.find(name);
+    if (found != end(userFuncTable) || found2 != end(funcTable))
+        throw std::runtime_error{ "Cannot override function " + name };
+    userFuncTable[name] = func;
+}
+
 bool SymbolTable::has_func(const std::string& name) const
 {
     return mps::stl::contains(funcTable, name);
+}
+
+bool SymbolTable::has_user_func(const std::string & name) const
+{
+    return mps::stl::contains(userFuncTable, name);
 }
 
 void SymbolTable::erase_func(const std::string& name)

@@ -9,6 +9,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MathParser", "..\MathParser
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Tests", "..\Tests\Tests.vcxproj", "{E7314704-7C18-4A24-9022-8B49BFDD028D}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FunctionParser", "..\FunctionParser\FunctionParser.vcxproj", "{4116865B-F77D-426D-BA04-A7D732A8C3CE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -41,6 +43,14 @@ Global
 		{E7314704-7C18-4A24-9022-8B49BFDD028D}.Release|x64.Build.0 = Release|x64
 		{E7314704-7C18-4A24-9022-8B49BFDD028D}.Release|x86.ActiveCfg = Release|Win32
 		{E7314704-7C18-4A24-9022-8B49BFDD028D}.Release|x86.Build.0 = Release|Win32
+		{4116865B-F77D-426D-BA04-A7D732A8C3CE}.Debug|x64.ActiveCfg = Debug|x64
+		{4116865B-F77D-426D-BA04-A7D732A8C3CE}.Debug|x64.Build.0 = Debug|x64
+		{4116865B-F77D-426D-BA04-A7D732A8C3CE}.Debug|x86.ActiveCfg = Debug|Win32
+		{4116865B-F77D-426D-BA04-A7D732A8C3CE}.Debug|x86.Build.0 = Debug|Win32
+		{4116865B-F77D-426D-BA04-A7D732A8C3CE}.Release|x64.ActiveCfg = Release|x64
+		{4116865B-F77D-426D-BA04-A7D732A8C3CE}.Release|x64.Build.0 = Release|x64
+		{4116865B-F77D-426D-BA04-A7D732A8C3CE}.Release|x86.ActiveCfg = Release|Win32
+		{4116865B-F77D-426D-BA04-A7D732A8C3CE}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

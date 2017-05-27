@@ -4,6 +4,7 @@
 
 enum class Kind : char {
     End,
+    Invalid,
     Number,
     String,
     Parallel,
@@ -20,8 +21,6 @@ enum class Kind : char {
     LParen = '(', RParen = ')',
     LBrace = '{', RBrace = '}',
     LBracket = '[', RBracket = ']',
-
-    Invalid
 };
 
 struct Token {

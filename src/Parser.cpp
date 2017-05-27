@@ -6,7 +6,10 @@
 #include <mps/stl_util.hpp>
 #include <mps/str_util.hpp>
 
-#include "Warning.hpp"
+#include "Function.hpp"
+
+using std::runtime_error;
+using std::logic_error;
 
 // https://stackoverflow.com/questions/12500411/setting-a-stdfunction-variable-to-refer-to-the-stdsin-function
 #define MAKE_FUNC(f) [] (const Complex& c) { return (f)(c); }
@@ -63,123 +66,89 @@ Complex Parser::expr()
 {
     auto left = term();
     for (;;) {
-        if (consume(Kind::Plus)) {
+        if (consume(Kind::Plus)) 
             left += term();
-        }
-        else if (consume(Kind::Minus)) {
+        else if (consume(Kind::Minus)) 
             left -= term();
-        }
         else if (peek(Kind::RParen)) {
             consume_closing_paren();
-            if (consume(Kind::String)) {
-                return left * table.value_of(prevToken.str);
-            }
             return left;
         }
         else if (consume(Kind::Print) || consume(Kind::End)) {
             check_all_paren_closed();
             return left;
         }
-        else {
-            error("Syntax error");
+        else if (peek(Kind::Comma)) {
+            return left;
         }
+        else error("Syntax error");
     }
+}
+
+Complex calc_Rparallel(Complex R1, Complex R2)
+{
+    if ((R1.imag() && R2.imag()) || (R1.real() > 0 && R2.real() > 0))
+        return R1 * R2 / (R1 + R2);
+    throw runtime_error{ "Resistors must be greater than 0 or complex" };
 }
 
 Complex Parser::term()
 {
     auto left = sign();
     for (;;) {
-        if (consume(Kind::Mul)) {
+        if (consume(Kind::Mul))
             left *= sign();
-        }
-        else if (consume(Kind::Div)) {
+        else if (consume(Kind::Div))
             left = safe_div(left, sign());
-        }
-        else if (consume(Kind::FloorDiv)) {
+        else if (consume(Kind::FloorDiv))
             left = safe_floordiv(left, sign());
-        }
         else if (consume(Kind::Mod)) {
             auto right = sign();
             if (!left.imag() && !right.imag()) {
                 auto left_trunc = std::trunc(left.real());
                 auto right_trunc = std::trunc(right.real());
-                if (left.real() != left_trunc || right.real() != right_trunc) {
+                if (left.real() != left_trunc || right.real() != right_trunc)
                     error("Modulo not defined for floating point numbers");
-                }
                 left = safe_mod(static_cast<long>(left_trunc), static_cast<long>(right_trunc));
             }
-            else {
-                error("Modulo not defined for complex numbers (yet)");
-            }
+            else error("Modulo not defined for complex numbers (yet)");
         }
-        else if (consume(Kind::Parallel)) {
-            auto right = sign();
-            if ((left.imag() && right.imag()) ||
-                (left.real() > 0 && right.real() > 0)) {
-                left = left * right / (left + right);
-            }
-            else {
-                error("Resistors must be greater than 0");
-            }
-        }
-        else {
-            return left;
-        }
+        else if (consume(Kind::Parallel))
+            left = calc_Rparallel(left, sign());
+        else return left;
     }
 }
 
 Complex Parser::sign()
 {
-    if (consume(Kind::Plus)) {
-        return postfix();
-    }
-    else if (consume(Kind::Minus)) {
-        return -postfix();
-    }
-    else {
-        return postfix();
-    }
+    if (consume(Kind::Plus)) return postfix();
+    if (consume(Kind::Minus)) return -postfix();
+    return postfix();
 }
 
 Complex Parser::postfix()
 {
     auto left = prim();
     for (;;) {
-        if (consume(Kind::Pow)) {
-            return std::pow(left, sign());
-        }
-        else if (consume(Kind::Fac)) {
-            static Warning w{ "Note: Factorial might overflow for larger numbers" };
-            double trunc = std::trunc(left.real());
-            if (!left.imag() && trunc == left.real() && trunc >= 0) {
+        if (consume(Kind::Pow)) return std::pow(left, sign());
+        if (consume(Kind::String)) return left * table.value_of(prevToken.str);
+        if (consume(Kind::Fac)) {
+            double trunc{ std::trunc(left.real()) };
+            if (!left.imag() && trunc == left.real() && trunc >= 0)
                 return factorial(static_cast<int>(trunc));
-            }
             error("Factorial only defined for N and 0");
         }
-        else if (consume(Kind::String)) {
-            return left * table.value_of(prevToken.str);
-        }
-        else {
-            return left;
-        }
+        return left;
     }
 }
 
 Complex Parser::prim()
 {
-    if (consume(Kind::Number)) {
-        return prevToken.num;
-    }
-    else if (consume(Kind::String)) {
-        return resolve_string_token();
-    }
-    else if (consume(Kind::LParen)) {
-        auto val = expr();
-        return val;
-    }
+    if (consume(Kind::Number)) return prevToken.num;
+    if (consume(Kind::String)) return resolve_string_token();
+    if (consume(Kind::LParen)) return expr();
     error("Unexpected Token ", ts.current());
-    return 0; // silence warning
+    throw std::logic_error{ "Fall through prim()" }; // silence C4715
 }
 
 Complex Parser::resolve_string_token()
@@ -189,36 +158,57 @@ Complex Parser::resolve_string_token()
         expect(Kind::LParen);
         return table.call_func(str, expr());
     }
-    else if (consume(Kind::Assign)) {
+    if (table.has_user_func(str)) {
+        expect(Kind::LParen);
+        Args args;
+        do { 
+            args.push_back(expr());
+        } while (consume(Kind::Comma));
+        return table.call_user_func(str, args);
+    }
+    if (consume(Kind::Assign)) {
         table.set_var(str, expr());
         return table.value_of(str);
     }
-    else if (table.has_var(str)) {
+    if (table.has_var(str))
         return table.value_of(str);
+    if (consume(Kind::LParen)) {
+        Function f;
+        f.set_name(str);
+        do {
+            expect(Kind::String);
+            f.add_var(prevToken.str);
+        } while (consume(Kind::Comma));
+
+        consume_closing_paren();
+        expect(Kind::Assign);
+
+        std::ostringstream term;
+        while (!peek(Kind::Print) && !peek(Kind::End) && !peek(Kind::Invalid)) {
+            term << ts.current();
+            ts.get();
+        }
+        f.set_term(term.str());
+        table.set_custom_func(str, f);
+        hasResult = false;
+        return 0;
     }
-    else if (consume(Kind::LParen)) {
-        error("Defining custom functions not implemented yet");
-    }
-    else {
-        error(str, " is undefined");
-    }
-    return 0; // silence warning
+    error(str, " is undefined");
+    throw logic_error{ "Fall through resolve_string_token()" }; // silence C4715
 }
 
 void Parser::check_open_paren()
 {
-    if (!lparenCount) {
-        lparenCount = 0;
-        error("Unexpected Token: )");
-    }
+    if (lparenCount) return;
+    lparenCount = 0;
+    error("Unexpected Token: )");
 }
 
 void Parser::check_all_paren_closed()
 {
-    if (lparenCount) {
-        lparenCount = 0;
-        error("Expected Token: )");
-    }
+    if (!lparenCount) return;
+    lparenCount = 0;
+    error("Expected Token: )");
 }
 
 void Parser::consume_closing_paren()
@@ -232,10 +222,8 @@ void Parser::consume_closing_paren()
 bool Parser::consume(Kind kind)
 {
     if (ts.current().kind == kind) {
+        if (kind == Kind::LParen) ++lparenCount;
         prevToken = ts.current();
-        if (kind == Kind::LParen) {
-            ++lparenCount;
-        }
         ts.get();
         return true;
     }
@@ -249,41 +237,28 @@ bool Parser::peek(Kind kind) const
 
 void Parser::expect(Kind kind)
 {
-    if (!consume(kind)) {
-        error("Expected Token ", Token{ kind });
-    }
+    if (!consume(kind)) error("Expected Token ", kind);
 }
 
 Complex safe_div(Complex left, Complex right)
 {
-    if (right.real() || right.imag()) {
+    if (right.real() || right.imag())
         return left / right;
-    }
-    throw std::runtime_error{ "Divide by zero" };
+    throw runtime_error{ "Divide by zero" };
 }
 
 Complex safe_floordiv(Complex left, Complex right)
 {
-    if (right.real() || right.imag()) {
-        left /= right;
-        return { std::floor(left.real()), std::floor(left.imag()) };
-    }
-    throw std::runtime_error{ "Divide by zero" };
+    if (!right.real() && !right.imag()) 
+        throw runtime_error{ "Divide by zero" };
+    left /= right;
+    return { std::floor(left.real()), std::floor(left.imag()) };
 }
 
 unsigned factorial(int n)
 {
-    if (n < 0) {
-        throw std::runtime_error{ "Factorial not defined for negative numbers" };
-    }
-    else if (n == 1) {
-        return 0;
-    }
-    else {
-        unsigned result{ 1 };
-        for (int i = 2; i <= n; ++i) {
-            result *= i;
-        }
-        return result;
-    }
+    if (n < 0) throw runtime_error{ "Factorial not defined for negative numbers" };
+    unsigned ret{ 1 };
+    while (n--) ret *= n;
+    return ret;
 }

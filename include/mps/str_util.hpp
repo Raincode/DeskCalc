@@ -21,6 +21,8 @@
 
 #include <algorithm>
 #include <cctype>
+#include <cmath>
+#include <complex>
 #include <iostream>
 #include <functional>
 #include <string>
@@ -266,6 +268,22 @@ std::string european_format(std::string number)
         }
     }
     return number;
+}
+
+template<class T>
+std::string complex_to_str(const std::complex<T>& num)
+{
+    std::ostringstream os;
+    if (num.imag()) {
+        if (num.real()) os << num.real();
+        if (num.real() && num.imag() > 0) os << '+';
+        if (std::abs(num.imag()) != 1) os << num.imag();
+        os << 'i';
+    }
+    else {
+        os << num.real();
+    }
+    return os.str();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

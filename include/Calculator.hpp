@@ -8,7 +8,7 @@
 #include "Parser.hpp"
 
 class Calculator {
-public:
+public: 
     Calculator();
 
     void run_file(const std::string& path);

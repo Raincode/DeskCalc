@@ -24,7 +24,6 @@ namespace Lexer {
     TokenStream::TokenStream(const std::string& str)
         : input{ new std::istringstream{str} }, ownsInput{ true }
     {
-
     }
 
     void TokenStream::set_input(std::istream& is)
@@ -49,9 +48,8 @@ namespace Lexer {
     {
         char ch;
         do {
-            if (!input || !input->get(ch)) {
+            if (!input || !input->get(ch)) 
                 return ct = { Kind::End };
-            }
         } while (std::isspace(static_cast<unsigned char>(ch)) && ch != '\n');
 
         switch (ch) {
@@ -85,8 +83,6 @@ namespace Lexer {
         default:
             return ct = parse_identifier(ch);
         }
-        while (ct.kind != Kind::Print) get();
-        error("Bad Token ", ch);
     }
 
     const Token& TokenStream::current() const
@@ -97,14 +93,15 @@ namespace Lexer {
     Token TokenStream::parse_double_op(char second, Kind onMatch, Kind onFailure)
     {
         char ch;
-        if (input->get(ch) && ch == second)
-            return { onMatch };
+        if (input->get(ch) && ch == second) return { onMatch };
         else {
             input->unget();
-            if (onFailure != Kind::Invalid)
+            if (onFailure != Kind::Invalid) {
                 return { onFailure };
+            }
             error("Expected Token: ", second);
         }
+        return { Kind::Invalid };
     }
 
     Token TokenStream::parse_identifier(char ch)
@@ -117,9 +114,8 @@ namespace Lexer {
             input->unget();
             return identifier_to_token(s);
         }
-        else {
-            error("Bad Token ", ch);
-        }
+        error("Bad Token ", ch);
+        return { Kind::Invalid };
     }
 
     Token TokenStream::identifier_to_token(const std::string& str) const
@@ -142,4 +138,4 @@ namespace Lexer {
             ownsInput = false;
         }
     }
-}	/* namespace Lexer */
+}	/* namespace Lexer bobj */

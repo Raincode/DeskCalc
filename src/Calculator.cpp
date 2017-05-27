@@ -48,9 +48,11 @@ void Calculator::calculate()
 {
     try {
         parser.parse();
-        parser.symbol_table().set_var("_", parser.result());
-        parser.symbol_table().set_var("ans", parser.result());
-        print_complex(cout, parser.result());
+        if (parser.has_result()) {
+            parser.symbol_table().set_var("_", parser.result());
+            parser.symbol_table().set_var("ans", parser.result());
+            print_complex(cout, parser.result());
+        }
     }
     catch (runtime_error& e) {
         std::cerr << e.what() << '\n';

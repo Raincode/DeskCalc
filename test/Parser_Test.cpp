@@ -6,7 +6,7 @@ TEST_CASE("Parser Test", "[Parser]") {
     Lexer::TokenStream ts;
     Parser parser{ ts };
 
-    parser.parse("1 + 2*(3 + 4) + 5*pi - pi*e / (1 + 27*2 + 3) - 5");
+    REQUIRE_NOTHROW(parser.parse("1 + 2*(3 + 4) + 5*pi - pi*e / (1 + 27*2 + 3) - 5"));
     REQUIRE((parser.result().real() - 25.5607) < 10e-3);
     REQUIRE(parser.result().imag() == 0);
 
@@ -17,7 +17,7 @@ TEST_CASE("Parser Test", "[Parser]") {
     parser.parse("17i - 5 * (2+3i) - (3i * i - 5 * 3 / (((i))))");
     REQUIRE(parser.result() == Complex(-7, -13));
 
-    parser.parse("+5");
+    REQUIRE_NOTHROW(parser.parse("+5"));
     REQUIRE(parser.result() == Complex(5, 0));
 
     parser.parse("-5");

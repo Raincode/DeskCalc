@@ -16,6 +16,7 @@ public:
     void parse();
     void parse(const std::string& input);
     Complex result() const { return res; }
+    bool has_result() const { return hasResult; }
     SymbolTable& symbol_table() { return table; }
 
 private:
