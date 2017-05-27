@@ -30,10 +30,6 @@ private:
     bool peek(Kind kind) const;
     void expect(Kind kind);
 
-    void check_all_paren_closed();
-    void check_open_paren();
-    void consume_closing_paren();
-
     Complex resolve_string_token();
 
     Token prevToken;
@@ -47,6 +43,7 @@ private:
 
 Complex safe_div(Complex left, Complex right);
 Complex safe_floordiv(Complex left, Complex right);
+Complex safe_mod(Complex left, Complex right);
 template<class T>
 T safe_mod(T left, T right)
 {
@@ -56,4 +53,5 @@ T safe_mod(T left, T right)
     throw std::runtime_error{ "Divide by Zero" };
 }
 unsigned factorial(int n);
+Complex calc_Rparallel(Complex R1, Complex R2);
 

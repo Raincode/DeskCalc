@@ -54,6 +54,7 @@ void Parser::parse()
     hasResult = true;
     ts.get();
     res = expr();
+    expect(Kind::End);
 }
 
 void Parser::parse(const std::string& str)
@@ -70,26 +71,9 @@ Complex Parser::expr()
             left += term();
         else if (consume(Kind::Minus)) 
             left -= term();
-        else if (peek(Kind::RParen)) {
-            consume_closing_paren();
+        else
             return left;
-        }
-        else if (consume(Kind::Print) || consume(Kind::End)) {
-            check_all_paren_closed();
-            return left;
-        }
-        else if (peek(Kind::Comma)) {
-            return left;
-        }
-        else error("Syntax error");
     }
-}
-
-Complex calc_Rparallel(Complex R1, Complex R2)
-{
-    if ((R1.imag() && R2.imag()) || (R1.real() > 0 && R2.real() > 0))
-        return R1 * R2 / (R1 + R2);
-    throw runtime_error{ "Resistors must be greater than 0 or complex" };
 }
 
 Complex Parser::term()
@@ -102,20 +86,12 @@ Complex Parser::term()
             left = safe_div(left, sign());
         else if (consume(Kind::FloorDiv))
             left = safe_floordiv(left, sign());
-        else if (consume(Kind::Mod)) {
-            auto right = sign();
-            if (!left.imag() && !right.imag()) {
-                auto left_trunc = std::trunc(left.real());
-                auto right_trunc = std::trunc(right.real());
-                if (left.real() != left_trunc || right.real() != right_trunc)
-                    error("Modulo not defined for floating point numbers");
-                left = safe_mod(static_cast<long>(left_trunc), static_cast<long>(right_trunc));
-            }
-            else error("Modulo not defined for complex numbers (yet)");
-        }
+        else if (consume(Kind::Mod))
+            left = safe_mod(left, sign());
         else if (consume(Kind::Parallel))
             left = calc_Rparallel(left, sign());
-        else return left;
+        else 
+            return left;
     }
 }
 
@@ -146,7 +122,11 @@ Complex Parser::prim()
 {
     if (consume(Kind::Number)) return prevToken.num;
     if (consume(Kind::String)) return resolve_string_token();
-    if (consume(Kind::LParen)) return expr();
+    if (consume(Kind::LParen)) {
+        auto val = expr();
+        expect(Kind::RParen);
+        return val;
+    }
     error("Unexpected Token ", ts.current());
     throw std::logic_error{ "Fall through prim()" }; // silence C4715
 }
@@ -164,6 +144,7 @@ Complex Parser::resolve_string_token()
         do { 
             args.push_back(expr());
         } while (consume(Kind::Comma));
+        expect(Kind::RParen);
         return table.call_user_func(str, args);
     }
     if (consume(Kind::Assign)) {
@@ -180,7 +161,7 @@ Complex Parser::resolve_string_token()
             f.add_var(prevToken.str);
         } while (consume(Kind::Comma));
 
-        consume_closing_paren();
+        expect(Kind::RParen);
         expect(Kind::Assign);
 
         std::ostringstream term;
@@ -197,32 +178,9 @@ Complex Parser::resolve_string_token()
     throw logic_error{ "Fall through resolve_string_token()" }; // silence C4715
 }
 
-void Parser::check_open_paren()
-{
-    if (lparenCount) return;
-    lparenCount = 0;
-    error("Unexpected Token: )");
-}
-
-void Parser::check_all_paren_closed()
-{
-    if (!lparenCount) return;
-    lparenCount = 0;
-    error("Expected Token: )");
-}
-
-void Parser::consume_closing_paren()
-{
-    while (consume(Kind::RParen)) {
-        check_open_paren();
-        --lparenCount;
-    }
-}
-
 bool Parser::consume(Kind kind)
 {
     if (ts.current().kind == kind) {
-        if (kind == Kind::LParen) ++lparenCount;
         prevToken = ts.current();
         ts.get();
         return true;
@@ -253,6 +211,25 @@ Complex safe_floordiv(Complex left, Complex right)
         throw runtime_error{ "Divide by zero" };
     left /= right;
     return { std::floor(left.real()), std::floor(left.imag()) };
+}
+
+Complex safe_mod(Complex left, Complex right)
+{
+    if (!left.imag() && !right.imag()) {
+        auto left_trunc = std::trunc(left.real());
+        auto right_trunc = std::trunc(right.real());
+        if (left.real() != left_trunc || right.real() != right_trunc)
+            throw runtime_error{ "Modulo not defined for floating point numbers" };
+        return safe_mod(static_cast<long>(left_trunc), static_cast<long>(right_trunc));
+    }
+    throw runtime_error{ "Modulo not defined for complex numbers (yet)" };
+}
+
+Complex calc_Rparallel(Complex R1, Complex R2)
+{
+    if ((R1.imag() && R2.imag()) || (R1.real() > 0 && R2.real() > 0))
+        return R1 * R2 / (R1 + R2);
+    throw runtime_error{ "Resistors must be greater than 0 or complex" };
 }
 
 unsigned factorial(int n)
