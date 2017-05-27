@@ -5,6 +5,8 @@
 #include <map>
 #include <string>
 
+#include "mps/stl_util.hpp"
+
 #include "types.hpp"
 
 class SymbolTable {
@@ -13,12 +15,6 @@ public:
         enum Type { Mutable, Const };
         Complex value;
         Type type{};
-    };
-
-    struct Func {
-        enum Type { Custom, BuiltIn };
-        ComplexFunc func;
-        Type type;
     };
 
     SymbolTable() = default;
@@ -49,4 +45,35 @@ private:
     std::map<std::string, Var> varTable;
     std::map<std::string, ComplexFunc> funcTable;
     std::map<std::string, ComplexMultiFunc> userFuncTable;
+};
+
+class VarGuard {
+public:
+    VarGuard(SymbolTable& table)
+        : table{ table } { }
+    
+    ~VarGuard()
+    {
+        for (const auto& var : setVars)
+            table.erase_var(var);
+        for (const auto& pair : varCache)
+            table.set_var(pair.first, pair.second);
+    }
+
+    void set_temp(const std::string& name, Complex val)
+    {
+        if (mps::stl::contains(setVars, name))
+            throw std::runtime_error{ "VarGuard - Cannot shadow variable " + name + " twice." };
+
+        if (table.has_var(name))
+            varCache[name] = table.value_of(name);
+
+        table.set_var(name, val);
+        setVars.push_back(name);
+    }
+
+private:
+    SymbolTable& table;
+    std::map<std::string, Complex> varCache;
+    std::vector<std::string> setVars;
 };

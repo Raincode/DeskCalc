@@ -8,6 +8,7 @@
 
 #include "Function.hpp"
 #include "math_util.hpp"
+#include "SymbolTable.hpp"
 
 Parser::Parser(SymbolTable& table)
     : table{ table }
@@ -19,7 +20,8 @@ void Parser::parse()
     hasResult = true;
     ts.get();
     res = expr();
-    expect(Kind::End);
+    if (!peek(Kind::Print) && !peek(Kind::End))
+        error("Unexpected Token ", ts.current());
 }
 
 void Parser::parse(std::istream& is)
@@ -60,7 +62,7 @@ Complex Parser::term()
         else if (consume(Kind::Mod))
             left = safe_mod(left, sign());
         else if (consume(Kind::Parallel))
-            left = calc_Rparallel(left, sign());
+            left = impedance_parallel(left, sign());
         else 
             return left;
     }
@@ -68,8 +70,10 @@ Complex Parser::term()
 
 Complex Parser::sign()
 {
-    if (consume(Kind::Plus)) return postfix();
-    if (consume(Kind::Minus)) return -postfix();
+    if (consume(Kind::Plus))
+        return postfix();
+    if (consume(Kind::Minus)) 
+        return -postfix();
     return postfix();
 }
 
@@ -77,17 +81,22 @@ Complex Parser::postfix()
 {
     auto left = prim();
     for (;;) {
-        if (consume(Kind::Pow)) return std::pow(left, sign());
-        if (consume(Kind::String)) return left * table.value_of(prevTok.str);
-        if (consume(Kind::Fac)) return checked_factorial(left);
+        if (consume(Kind::Pow))
+            return std::pow(left, sign());
+        if (consume(Kind::String)) 
+            return left * table.value_of(prevTok.str);
+        if (consume(Kind::Fac)) 
+            return factorial(left);
         return left;
     }
 }
 
 Complex Parser::prim()
 {
-    if (consume(Kind::Number)) return prevTok.num;
-    if (consume(Kind::String)) return resolve_string_token();
+    if (consume(Kind::Number)) 
+        return prevTok.num;
+    if (consume(Kind::String)) 
+        return resolve_string_token();
     if (consume(Kind::LParen)) {
         auto val = expr();
         expect(Kind::RParen);
@@ -102,7 +111,9 @@ Complex Parser::resolve_string_token()
     auto str = prevTok.str;
     if (table.has_func(str)) {
         expect(Kind::LParen);
-        return table.call_func(str, expr());
+        auto res = table.call_func(str, expr());
+        expect(Kind::RParen);
+        return res;
     }
     if (table.has_user_func(str)) {
         expect(Kind::LParen);
@@ -161,5 +172,6 @@ bool Parser::peek(Kind kind) const
 
 void Parser::expect(Kind kind)
 {
-    if (!consume(kind)) error("Expected Token ", kind);
+    if (!consume(kind))
+        error("Expected Token ", kind);
 }

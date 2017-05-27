@@ -8,7 +8,7 @@ enum class Kind : char {
     Number,
     String,
     Parallel,
-    Print = ';',
+    Print,
 
     Plus = '+', Minus = '-', Mul = '*', Div = '/',
     FloorDiv,
@@ -26,7 +26,7 @@ enum class Kind : char {
 struct Token {
     Kind kind{};
     std::string str;
-    double num;
+    double num{};
 };
 
 inline std::ostream& operator<<(std::ostream& os, Kind kind)

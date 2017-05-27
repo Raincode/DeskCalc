@@ -119,12 +119,8 @@ void SymbolTable::add_constants()
     set_const("i", { 0, 1 });
     set_const("pi", std::acos(-1));
     set_const("e", 2.7182818284590452354);
-    set_const("q_e", 1.60217733e-19);
-    set_const("c", 2.99792458e8);
-    set_const("m_e", 9.1093897e-31);
 }
 
-// https://stackoverflow.com/questions/12500411/setting-a-stdfunction-variable-to-refer-to-the-stdsin-function
 #define MAKE_FUNC(f) [] (const Complex& c) { return (f)(c); }
 #define MAKE_REAL_FUNC(f) [] (double d) { return (f)(d); }
 

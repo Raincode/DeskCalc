@@ -1,19 +1,18 @@
 #pragma once
 
-#include <complex>
 #include <istream>
 #include <map>
 #include <string>
 
 #include "ErrorReporter.hpp"
-#include "TokenStream.hpp"
 #include "SymbolTable.hpp"
+#include "TokenStream.hpp"
+#include "types.hpp"
 
 class Parser {
 public:
     Parser(SymbolTable& table);
 
-    void parse();
     void parse(std::istream& is);
     void parse(const std::string& input);
 
@@ -24,6 +23,7 @@ public:
     void set_symbol_table(SymbolTable& t) { table = t; }
 
 private:
+    void parse();
     Complex expr();
     Complex term();
     Complex sign();

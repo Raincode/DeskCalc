@@ -12,6 +12,7 @@ public:
 
     void run_file(const std::string& path);
     void run_cli();
+    void exec(const std::string& input);
 
 private:
     void show_intro() const;

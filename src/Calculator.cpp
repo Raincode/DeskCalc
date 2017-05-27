@@ -37,21 +37,24 @@ void Calculator::run_cli()
     for (string s; isRunning && getline(cin, s); ) {
         s = mps::str::trim(s);
         if (s.size() && !handle_cmd(s)) {
-            try {
-                parser.parse(s);
-                if (parser.has_result()) {
-                    parser.symbol_table().set_var("_", parser.result());
-                    parser.symbol_table().set_var("ans", parser.result());
-                    print_complex(cout, parser.result());
-                }
+            try { 
+                exec(s);
             }
             catch (runtime_error& e) {
                 std::cerr << e.what() << '\n';
             }
         }
-        if (isRunning) {
-            cout << prompt;
-        }
+        if (isRunning) cout << prompt;
+    }
+}
+
+void Calculator::exec(const std::string& input)
+{
+    parser.parse(input);
+    if (parser.has_result()) {
+        parser.symbol_table().set_var("_", parser.result());
+        parser.symbol_table().set_var("ans", parser.result());
+        print_complex(cout, parser.result());
     }
 }
 
@@ -61,14 +64,13 @@ void Calculator::show_intro() const
                                "\n                               ~ ~ ~ ~ ~ ~\n" };
     ifstream ifs{ "intro.txt" };
     if (ifs) {
-        for (string s; getline(ifs, s);) {
-            std::cout << "                " << s << '\n';
-        }
-        std::cout << '\n';
+        for (string s; getline(ifs, s); )
+            cout << "                " << s << '\n';
+        cout << '\n';
     }
-    else {
+    else
         cout << intro;
-    }
+
     static Warning w{ "Copyright (C) 2017  Matthias Stauber\n"
                       "This program comes with ABSOLUTELY NO WARRANTY\n" };
 }
@@ -95,15 +97,12 @@ void Calculator::register_commands()
         [] { std::cout << "GNU General Public License v3\n"; };
     commands["copyright"] =
         [] { std::cout << "Copyright (C) 2017  Matthias Stauber\n"; };
-    commands["clear"] = commands["cls"] =
-        [this] {
+    commands["clear"] = commands["cls"] = [this] {
         mps::cls();
         show_intro();
     };
-    commands["help"] =
-        [] { std::cout << helpText; };
-    commands["run"] =
-        [this] {
+    commands["help"] = [] { std::cout << helpText; };
+    commands["run"] = [this] {
         cout << "file: ";
         string fname;
         if (cin >> fname) {
