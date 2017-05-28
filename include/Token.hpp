@@ -9,18 +9,24 @@ enum class Kind : char {
     String,
     Parallel,
     Print,
-
-    Plus = '+', Minus = '-', Mul = '*', Div = '/',
     FloorDiv,
+
+    Plus = '+', 
+    Minus = '-',
+    Mul = '*', 
+    Div = '/',
     Mod = '%',
     Pow = '^',
     Fac = '!',
     Assign = '=',
     Comma = ',',
 
-    LParen = '(', RParen = ')',
-    LBrace = '{', RBrace = '}',
-    LBracket = '[', RBracket = ']',
+    LParen = '(',
+    RParen = ')',
+    LBrace = '{', 
+    RBrace = '}',
+    LBracket = '[',
+    RBracket = ']',
 };
 
 struct Token {
@@ -33,12 +39,12 @@ inline std::ostream& operator<<(std::ostream& os, Kind kind)
 {
     switch (kind) {
     case Kind::End: return os << "END";
+    case Kind::Invalid: return os << "INVALID";
     case Kind::Number: return os << "NUMBER";
     case Kind::String: return os << "STRING";
     case Kind::Parallel: return os << "PARALLEL";
-    case Kind::Invalid: return os << "INVALID";
     case Kind::Print: return os << "PRINT";
-    case Kind::FloorDiv: return os << "FLOORDIV";
+    case Kind::FloorDiv: return os << "div";
     default: return os << static_cast<char>(kind);
     }
 }
