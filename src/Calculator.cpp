@@ -6,6 +6,7 @@
 #include "mps/str_util.hpp"
 #include "mps/console_util.hpp"
 
+#include "math_util.hpp"
 #include "Warning.hpp"
 
 using namespace std;
@@ -34,27 +35,26 @@ void Calculator::run_cli()
     show_intro();
     cout << prompt;
 
-    for (string s; isRunning && getline(cin, s); ) {
+    for (string s; getline(cin, s); ) {
         s = mps::str::trim(s);
-        if (s.size() && !handle_cmd(s)) {
-            try { 
+        if (s.size() && !handle_cmd(s))
                 exec(s);
-            }
-            catch (runtime_error& e) {
-                std::cerr << e.what() << '\n';
-            }
-        }
-        if (isRunning) cout << prompt;
+        cout << prompt;
     }
 }
 
 void Calculator::exec(const std::string& input)
 {
-    parser.parse(input);
-    if (parser.has_result()) {
-        parser.symbol_table().set_var("_", parser.result());
-        parser.symbol_table().set_var("ans", parser.result());
-        print_complex(cout, parser.result());
+    try {
+        parser.parse(input);
+        if (parser.has_result()) {
+            parser.symbol_table().set_var("_", parser.result());
+            parser.symbol_table().set_var("ans", parser.result());
+            print_complex(cout, parser.result());
+        }
+    }
+    catch (runtime_error& e) {
+        std::cerr << e.what() << '\n';
     }
 }
 
@@ -91,17 +91,14 @@ static const string helpText{
 
 void Calculator::register_commands()
 {
-    commands["rip"] = commands["quit"] = commands["exit"] = commands["close"] =
-        [this] { isRunning = false; };
-    commands["license"] =
-        [] { std::cout << "GNU General Public License v3\n"; };
-    commands["copyright"] =
-        [] { std::cout << "Copyright (C) 2017  Matthias Stauber\n"; };
+    commands["license"] = [] { std::cout << "GNU General Public License v3\n"; };
+    commands["copyright"] = [] { std::cout << "Copyright (C) 2017  Matthias Stauber\n"; };
     commands["clear"] = commands["cls"] = [this] {
         mps::cls();
         show_intro();
     };
     commands["help"] = [] { std::cout << helpText; };
+
     commands["run"] = [this] {
         cout << "file: ";
         string fname;
@@ -112,20 +109,20 @@ void Calculator::register_commands()
     };
 }
 
-void print_complex(std::ostream& os, Complex num)
+void print_complex(std::ostream& os, Complex n)
 {
     using std::cout;
-    auto re = num.real();
-    auto im = num.imag();
 
-    if (im) {
-        if (re) cout << re;
-        if (re && im > 0) cout << '+';
-        if (im != 1 && im != -1) std::cout << im;
-        std::cout << 'i';
+    if (n.imag()) {
+        if (n.real())
+            cout << n.real();
+        if (n.imag() > 0)
+            cout << '+';
+        if (std::abs(n.imag()) != 1)
+            cout << n.imag();
+        cout << 'i';
     }
-    else {
-        std::cout << re;
-    }
-    std::cout << '\n';
+    else
+        cout << n.real();
+    cout << '\n';
 }

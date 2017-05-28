@@ -5,6 +5,7 @@
 #include <string>
 
 #include "ErrorReporter.hpp"
+#include "Function.hpp"
 #include "SymbolTable.hpp"
 #include "TokenStream.hpp"
 #include "types.hpp"
@@ -30,6 +31,12 @@ private:
     Complex postfix();
     Complex prim();
     Complex resolve_string_token();
+    Complex resolve_var();
+    Complex resolve_func();
+    Args parse_args();
+    Complex func_call();
+    void parse_param_list(Function& func);
+    void parse_func_term(Function& func);
 
     bool peek(Kind kind) const;
     bool consume(Kind kind);

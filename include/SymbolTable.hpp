@@ -22,17 +22,18 @@ public:
     void add_default_funcs();
     void add_constants();
 
-    Complex value_of(const std::string& var);
+    Complex value(const std::string& var);
+    Complex value(const std::string& funcName, Complex arg);
+    Complex value(const std::string& userFunc, const Args& args);
+
     void set_var(const std::string& name, Complex value);
+    Var get_var(const std::string& name) const;
     void set_const(const std::string& name, Complex value);
     bool has_var(const std::string& name) const;
     void erase_var(const std::string& name);
 
-    Complex call_func(const std::string& name, Complex arg);
-    Complex call_user_func(const std::string& name, const Args& args);
     void add_builtin_func(const std::string& name, ComplexFunc func);
-    void add_builtin_real_func(const std::string& name, std::function<double(double)> func);
-    void set_custom_func(const std::string& name, ComplexFunc func);
+    void add_builtin_func(const std::string& name, std::function<double(double)> func);
     void set_custom_func(const std::string& name, ComplexMultiFunc func);
     bool has_func(const std::string& name) const;
     bool has_user_func(const std::string& name) const;
@@ -56,8 +57,12 @@ public:
     {
         for (const auto& var : setVars)
             table.erase_var(var);
-        for (const auto& pair : varCache)
-            table.set_var(pair.first, pair.second);
+        for (const auto& pair : varCache) {
+            if (pair.second.type == SymbolTable::Var::Const)
+                table.set_const(pair.first, pair.second.value);
+            else
+                table.set_var(pair.first, pair.second.value);
+        }
     }
 
     void set_temp(const std::string& name, Complex val)
@@ -65,8 +70,10 @@ public:
         if (mps::stl::contains(setVars, name))
             throw std::runtime_error{ "VarGuard - Cannot shadow variable " + name + " twice." };
 
-        if (table.has_var(name))
-            varCache[name] = table.value_of(name);
+        if (table.has_var(name)) {
+            varCache[name] = table.get_var(name);
+            table.erase_var(name);
+        }
 
         table.set_var(name, val);
         setVars.push_back(name);
@@ -74,6 +81,6 @@ public:
 
 private:
     SymbolTable& table;
-    std::map<std::string, Complex> varCache;
+    std::map<std::string, SymbolTable::Var> varCache;
     std::vector<std::string> setVars;
 };

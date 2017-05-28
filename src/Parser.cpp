@@ -84,7 +84,7 @@ Complex Parser::postfix()
         if (consume(Kind::Pow))
             return std::pow(left, sign());
         if (consume(Kind::String)) 
-            return left * table.value_of(prevTok.str);
+            return left * table.value(prevTok.str);
         if (consume(Kind::Fac)) 
             return factorial(left);
         return left;
@@ -108,51 +108,77 @@ Complex Parser::prim()
 
 Complex Parser::resolve_string_token()
 {
-    auto str = prevTok.str;
-    if (table.has_func(str)) {
-        expect(Kind::LParen);
-        auto res = table.call_func(str, expr());
-        expect(Kind::RParen);
-        return res;
-    }
-    if (table.has_user_func(str)) {
-        expect(Kind::LParen);
-        Args args;
-        do { 
-            args.push_back(expr());
-        } while (consume(Kind::Comma));
-        expect(Kind::RParen);
-        return table.call_user_func(str, args);
-    }
-    if (consume(Kind::Assign)) {
-        table.set_var(str, expr());
-        return table.value_of(str);
-    }
-    if (table.has_var(str))
-        return table.value_of(str);
-    if (consume(Kind::LParen)) {
-        Function f{ table };
-        f.set_name(str);
-        do {
-            expect(Kind::String);
-            f.add_var(prevTok.str);
-        } while (consume(Kind::Comma));
+    if (peek(Kind::LParen))
+        return resolve_func();
+    return resolve_var();
+}
 
-        expect(Kind::RParen);
-        expect(Kind::Assign);
+Complex Parser::resolve_var()
+{
+    auto name = prevTok.str;
+    if (consume(Kind::Assign))
+        table.set_var(name, expr());
+    return table.value(name);
+}
 
-        std::ostringstream term;
-        while (!peek(Kind::Print) && !peek(Kind::End) && !peek(Kind::Invalid)) {
-            term << ts.current();
-            ts.get();
-        }
-        f.set_term(term.str());
-        table.set_custom_func(str, f);
-        hasResult = false;
-        return 0;
+Args Parser::parse_args()
+{
+    expect(Kind::LParen);
+    Args args;
+    do {
+        args.push_back(expr());
+    } while (consume(Kind::Comma));
+    expect(Kind::RParen);
+    return args;
+}
+
+Complex Parser::func_call()
+{
+    auto funcName = prevTok.str;
+    expect(Kind::LParen);
+    auto result = table.value(funcName, expr());
+    expect(Kind::RParen);
+    return result;
+}
+
+void Parser::parse_param_list(Function& func)
+{
+    expect(Kind::LParen);
+    do {
+        expect(Kind::String);
+        func.add_var(prevTok.str);
+    } while (consume(Kind::Comma));
+    expect(Kind::RParen);
+}
+
+void Parser::parse_func_term(Function& func)
+{
+    std::ostringstream term;
+    while (!peek(Kind::Print) && !peek(Kind::End) && !peek(Kind::Invalid)) {
+        term << ts.current();
+        ts.get();
     }
-    error(str, " is undefined");
-    throw std::logic_error{ "Fall through resolve_string_token()" }; // silence C4715
+    func.set_term(term.str());
+}
+
+Complex Parser::resolve_func()
+{
+    auto name = prevTok.str;
+    if (table.has_func(name))
+        return func_call();
+    if (table.has_user_func(name))
+        return table.value(name, parse_args());
+
+    Function f{ table };
+    f.set_name(name);
+    parse_param_list(f);
+
+    expect(Kind::Assign);
+    parse_func_term(f);
+
+    table.set_custom_func(name, f);
+    hasResult = false;
+    return 0;
 }
 
 bool Parser::consume(Kind kind)

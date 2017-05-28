@@ -5,7 +5,7 @@
 
 #include <mps/stl_util.hpp>
 
-Complex SymbolTable::value_of(const std::string& var)
+Complex SymbolTable::value(const std::string& var)
 {
     auto found = varTable.find(var);
     if (found == end(varTable))
@@ -21,6 +21,14 @@ void SymbolTable::set_var(const std::string& name, Complex value)
 void SymbolTable::set_const(const std::string& name, Complex value)
 {
     set_value(name, { value, Var::Const });
+}
+
+SymbolTable::Var SymbolTable::get_var(const std::string& name) const
+{
+    auto found = varTable.find(name);
+    if (found == end(varTable))
+        throw std::runtime_error{ name + " is not defined" };
+    return found->second;
 }
 
 bool SymbolTable::has_var(const std::string& name) const
@@ -43,7 +51,7 @@ void SymbolTable::set_value(const std::string& name, Var var)
     varTable[name] = var;
 }
 
-Complex SymbolTable::call_func(const std::string& name, Complex arg)
+Complex SymbolTable::value(const std::string& name, Complex arg)
 {
     auto found = funcTable.find(name);
     if (found == end(funcTable))
@@ -51,7 +59,7 @@ Complex SymbolTable::call_func(const std::string& name, Complex arg)
     return found->second(arg);
 }
 
-Complex SymbolTable::call_user_func(const std::string & name, const Args & args)
+Complex SymbolTable::value(const std::string & name, const Args & args)
 {
     auto found = userFuncTable.find(name);
     if (found == end(userFuncTable))
@@ -64,7 +72,7 @@ void SymbolTable::add_builtin_func(const std::string& name, ComplexFunc func)
     set_function(name, func);
 }
 
-void SymbolTable::add_builtin_real_func(const std::string& name, std::function<double(double)> func)
+void SymbolTable::add_builtin_func(const std::string& name, std::function<double(double)> func)
 {
     auto proxy_func = [f = std::move(func), name](const Complex& c) {
         if (c.imag()) {
@@ -73,11 +81,6 @@ void SymbolTable::add_builtin_real_func(const std::string& name, std::function<d
         return Complex{ f(c.real()), 0 };
     };
     set_function(name, proxy_func);
-}
-
-void SymbolTable::set_custom_func(const std::string& name, ComplexFunc func)
-{
-    set_function(name, func);
 }
 
 void SymbolTable::set_custom_func(const std::string& name, ComplexMultiFunc func)
@@ -145,10 +148,10 @@ void SymbolTable::add_default_funcs()
     funcTable["ln"] = MAKE_FUNC(std::log);
     funcTable["log"] = MAKE_FUNC(std::log10);
 
-    add_builtin_real_func("floor", MAKE_REAL_FUNC(std::floor));
-    add_builtin_real_func("ceil", MAKE_REAL_FUNC(std::ceil));
-    add_builtin_real_func("round", MAKE_REAL_FUNC(std::round));
-    add_builtin_real_func("trunc", MAKE_REAL_FUNC(std::trunc));
+    add_builtin_func("floor", MAKE_REAL_FUNC(std::floor));
+    add_builtin_func("ceil", MAKE_REAL_FUNC(std::ceil));
+    add_builtin_func("round", MAKE_REAL_FUNC(std::round));
+    add_builtin_func("trunc", MAKE_REAL_FUNC(std::trunc));
 }
 
 #undef MAKE_FUNC

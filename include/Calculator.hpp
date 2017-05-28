@@ -22,7 +22,6 @@ private:
     SymbolTable symbolTable;
     Parser parser;
     std::map<std::string, std::function<void()>> commands;
-    bool isRunning{ true };
 };
 
 void print_complex(std::ostream& os, Complex num);

@@ -123,6 +123,7 @@
     <ClInclude Include="..\..\include\types.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\src\Function.cpp" />
     <ClCompile Include="..\..\src\TokenStream.cpp" />
     <ClCompile Include="..\..\src\math_util.cpp" />
     <ClCompile Include="..\..\src\Parser.cpp" />
