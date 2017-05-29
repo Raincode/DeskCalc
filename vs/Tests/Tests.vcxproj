@@ -117,14 +117,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\include\mps\test\clipboard_test.cpp" />
     <ClCompile Include="..\..\test\TokenStream_Test.cpp" />
     <ClCompile Include="..\..\test\main.cpp" />
     <ClCompile Include="..\..\test\math_util_Test.cpp" />
     <ClCompile Include="..\..\test\Parser_Test.cpp" />
     <ClCompile Include="..\..\test\SymbolTable_Test.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="..\..\test\catch.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\MathParser\MathParser.vcxproj">

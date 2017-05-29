@@ -7,7 +7,7 @@ int main(int argc, char* argv[])
 try
 {
     Calculator calc;
-    calc.run_cli();
+    calc.run(argc, argv);
     return 0;
 }
 catch (std::runtime_error& e)

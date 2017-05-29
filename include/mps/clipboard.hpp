@@ -50,23 +50,23 @@ bool set_clipboard_text(const std::string& text)
 {
     std::size_t len {text.size() + 1}; // +1 for terminating '\0'
     mps::Handle<HGLOBAL, HGLOBAL> mem{GlobalAlloc(GMEM_MOVEABLE, len), GlobalFree};
-    if (!mem) return false;
+    if (!mem) 
+        return false;
 
     memcpy(GlobalLock(mem), text.c_str(), len);
     GlobalUnlock(mem);
 
     auto cb = detail::make_clipboard_handle();
-    if (!cb || !EmptyClipboard() || !SetClipboardData(CF_TEXT, mem)) return false;
+    if (!cb || !EmptyClipboard() || !SetClipboardData(CF_TEXT, mem))
+        return false;
     mem.release();  // SetClipboardData takes ownership if successful
     return true;
 }
 
 std::string get_clipboard_text()
 {
-    if (auto cb = detail::make_clipboard_handle())
-    {
-        if (auto data = GetClipboardData(CF_TEXT))
-        {
+    if (auto cb = detail::make_clipboard_handle()) {
+        if (auto data = GetClipboardData(CF_TEXT)) {
             mps::Handle<LPVOID, BOOL> lock{ GlobalLock(data), GlobalUnlock };
             return static_cast<char*>(LPVOID{lock});
         }

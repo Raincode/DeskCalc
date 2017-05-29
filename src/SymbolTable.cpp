@@ -67,22 +67,6 @@ Complex SymbolTable::value(const std::string & name, const Args & args)
     return found->second(args);
 }
 
-void SymbolTable::add_builtin_func(const std::string& name, ComplexFunc func)
-{
-    set_function(name, func);
-}
-
-void SymbolTable::add_builtin_func(const std::string& name, std::function<double(double)> func)
-{
-    auto proxy_func = [f = std::move(func), name](const Complex& c) {
-        if (c.imag()) {
-            throw std::runtime_error{ name + " not defined for complex numbers" };
-        }
-        return Complex{ f(c.real()), 0 };
-    };
-    set_function(name, proxy_func);
-}
-
 void SymbolTable::set_custom_func(const std::string& name, ComplexMultiFunc func)
 {
     auto found = userFuncTable.find(name);
@@ -125,33 +109,43 @@ void SymbolTable::add_constants()
 }
 
 #define MAKE_FUNC(f) [] (const Complex& c) { return (f)(c); }
+
+#define MAKE_FUNC_COMPLEX(f) \
+    [] (const Complex& c) { \
+        if (c.imag()) \
+            throw std::runtime_error{ "Function " #f " not defined for complex numbers" }; \
+        return Complex{ (f)(c.real()) }; \
+    }
+
 #define MAKE_REAL_FUNC(f) [] (double d) { return (f)(d); }
 
 void SymbolTable::add_default_funcs()
 {
-    funcTable["sin"] = MAKE_FUNC(std::sin);
-    funcTable["cos"] = MAKE_FUNC(std::cos);
-    funcTable["tan"] = MAKE_FUNC(std::tan);
-    funcTable["asin"] = MAKE_FUNC(std::asin);
-    funcTable["acos"] = MAKE_FUNC(std::acos);
-    funcTable["atan"] = MAKE_FUNC(std::atan);
-    funcTable["sinh"] = MAKE_FUNC(std::sinh);
-    funcTable["cosh"] = MAKE_FUNC(std::cosh);
-    funcTable["tanh"] = MAKE_FUNC(std::tanh);
+    using namespace std;
 
-    funcTable["abs"] = MAKE_FUNC(std::abs);
-    funcTable["norm"] = MAKE_FUNC(std::norm);
-    funcTable["arg"] = MAKE_FUNC(std::arg);
-    funcTable["exp"] = MAKE_FUNC(std::exp);
+    funcTable["sin"] = MAKE_FUNC(sin);
+    funcTable["cos"] = MAKE_FUNC(cos);
+    funcTable["tan"] = MAKE_FUNC(tan);
+    funcTable["asin"] = MAKE_FUNC(asin);
+    funcTable["acos"] = MAKE_FUNC(acos);
+    funcTable["atan"] = MAKE_FUNC(atan);
+    funcTable["sinh"] = MAKE_FUNC(sinh);
+    funcTable["cosh"] = MAKE_FUNC(cosh);
+    funcTable["tanh"] = MAKE_FUNC(tanh);
 
-    funcTable["sqrt"] = MAKE_FUNC(std::sqrt);
-    funcTable["ln"] = MAKE_FUNC(std::log);
-    funcTable["log"] = MAKE_FUNC(std::log10);
+    funcTable["abs"] = MAKE_FUNC(abs);
+    funcTable["norm"] = MAKE_FUNC(norm);
+    funcTable["arg"] = MAKE_FUNC(arg);
+    funcTable["exp"] = MAKE_FUNC(exp);
 
-    add_builtin_func("floor", MAKE_REAL_FUNC(std::floor));
-    add_builtin_func("ceil", MAKE_REAL_FUNC(std::ceil));
-    add_builtin_func("round", MAKE_REAL_FUNC(std::round));
-    add_builtin_func("trunc", MAKE_REAL_FUNC(std::trunc));
+    funcTable["sqrt"] = MAKE_FUNC(sqrt);
+    funcTable["ln"] = MAKE_FUNC(log);
+    funcTable["log"] = MAKE_FUNC(log10);
+
+    funcTable["floor"] = MAKE_FUNC_COMPLEX(floor);
+    funcTable["ceil"] = MAKE_FUNC_COMPLEX(ceil);
+    funcTable["round"] = MAKE_FUNC_COMPLEX(round);
+    funcTable["trunc"] = MAKE_FUNC_COMPLEX(trunc);
 }
 
 #undef MAKE_FUNC

@@ -48,6 +48,12 @@ std::string replace_all(std::string str, const std::string& before, const std::s
     return str;
 }
 
+std::string replace_all(std::string s, char oldCh, char newCh)
+{
+    std::replace(begin(s), end(s), oldCh, newCh);
+    return s;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 
 bool ends_with(const std::string& str, const std::string& tail)
@@ -242,32 +248,45 @@ std::string to_string(const T& value)
     return os.str();
 }
 
+template<class T>
+std::string to_string(const std::complex<T>& n)
+{
+    if (n.imag()) {
+        std::string ret;
+        if (n.real()) {
+            ret += to_string(n.real());
+            if (n.imag() > 0) ret += '+';
+        }
+        if (std::abs(n.imag()) != 1)
+            ret += to_string(n.imag());
+        return ret + 'i';
+    }
+    else
+        return to_string(n.real());
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 
-std::string european_format(std::string number)
+std::string format_number_EU(std::string num)
 {
-    auto end = std::string::npos;
+    num = replace_all(num, '.', ',');
 
-    std::size_t pos = number.find_first_of('.');
-    if (pos != end) number.replace(pos, 1, ",");
-
-    pos = number.find_first_of('e');
-    if (pos != end)
-    {
-        number.replace(pos, 1, "E");
+    auto pos = num.find_first_of('e');
+    if (pos != std::string::npos) {
+        num.replace(pos, 1, "E");
         ++pos;
-        std::size_t sign;
-        if ((sign = number.find_first_of("+", pos)) != end)
-        {
-            number.erase(number.begin() + sign);
-        }
-        else ++pos;
-        while (pos < number.size() && number[pos] == '0')
-        {
-            number.erase(number.begin() + pos);
-        }
+
+        auto plus = num.find_first_of("+", pos);
+        if (plus != std::string::npos)
+            num.erase(plus, 1);
+
+        if (num[pos] == '-')
+            ++pos;
+
+        while (pos < num.size() && num[pos] == '0')
+            num.erase(pos, 1);
     }
-    return number;
+    return num;
 }
 
 template<class T>

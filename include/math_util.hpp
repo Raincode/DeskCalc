@@ -1,7 +1,5 @@
 #pragma once
 
-#include <complex>
-
 #include "types.hpp"
 
 constexpr bool is_zero(const Complex& num);

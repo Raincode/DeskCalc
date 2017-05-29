@@ -25,6 +25,7 @@ public:
 
 private:
     void parse();
+    void stmt();
     Complex expr();
     Complex term();
     Complex sign();

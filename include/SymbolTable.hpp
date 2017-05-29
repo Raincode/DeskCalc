@@ -30,8 +30,6 @@ public:
     bool has_var(const std::string& name) const;
     void erase_var(const std::string& name);
 
-    void add_builtin_func(const std::string& name, ComplexFunc func);
-    void add_builtin_func(const std::string& name, std::function<double(double)> func);
     void set_custom_func(const std::string& name, ComplexMultiFunc func);
     bool has_func(const std::string& name) const;
     bool has_user_func(const std::string& name) const;

@@ -4,6 +4,7 @@
 #include <iostream>
 
 #include "mps/str_util.hpp"
+#include "mps/clipboard.hpp"
 #include "mps/console_util.hpp"
 
 #include "math_util.hpp"
@@ -19,14 +20,30 @@ Calculator::Calculator()
     symbolTable.add_default_funcs();
 }
 
-void Calculator::run_file(const string& path)
+void Calculator::run(int argc, char* argv[])
+{
+    switch (argc) {
+    case 1:
+        run_cli();
+        break;
+    case 2:
+        if (std::string(argv[1]) == "-")
+            run_cli();
+        else if (!run_file(argv[1]))
+            exec(argv[1]);
+        break;
+    default:
+        throw runtime_error{ "Invalid number of arguments" };
+    }
+}
+
+bool Calculator::run_file(const string& path)
 {
     ifstream ifs{ path };
-    if (!ifs) {
-        cerr << "Unable to open file '" << path << "'\n";
-        return;
-    }
+    if (!ifs)
+        return false;
     parser.parse(ifs);
+    return true;
 }
 
 void Calculator::run_cli()
@@ -38,7 +55,7 @@ void Calculator::run_cli()
     for (string s; getline(cin, s); ) {
         s = mps::str::trim(s);
         if (s.size() && !handle_cmd(s))
-                exec(s);
+            exec(s);
         cout << prompt;
     }
 }
@@ -91,12 +108,11 @@ static const string helpText{
 
 void Calculator::register_commands()
 {
-    commands["license"] = [] { std::cout << "GNU General Public License v3\n"; };
-    commands["copyright"] = [] { std::cout << "Copyright (C) 2017  Matthias Stauber\n"; };
     commands["clear"] = commands["cls"] = [this] {
         mps::cls();
         show_intro();
     };
+
     commands["help"] = [] { std::cout << helpText; };
 
     commands["run"] = [this] {
@@ -107,6 +123,11 @@ void Calculator::register_commands()
             run_file(fname);
         }
     };
+
+    commands["copy,"] = [this] {
+        auto str = mps::str::to_string(parser.symbol_table().value("_"));
+        mps::set_clipboard_text(mps::str::format_number_EU(str));
+    };
 }
 
 void print_complex(std::ostream& os, Complex n)
@@ -114,10 +135,11 @@ void print_complex(std::ostream& os, Complex n)
     using std::cout;
 
     if (n.imag()) {
-        if (n.real())
+        if (n.real()) {
             cout << n.real();
-        if (n.imag() > 0)
-            cout << '+';
+            if (n.imag() > 0)
+                cout << '+';
+        }
         if (std::abs(n.imag()) != 1)
             cout << n.imag();
         cout << 'i';

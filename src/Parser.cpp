@@ -11,17 +11,20 @@
 #include "SymbolTable.hpp"
 
 Parser::Parser(SymbolTable& table)
-    : table{ table }
-{
-}
+    : table{ table } { }
 
 void Parser::parse()
 {
-    hasResult = true;
     ts.get();
+    while (!consume(Kind::End))
+        stmt();
+}
+
+void Parser::stmt()
+{
+    hasResult = true;
     res = expr();
-    if (!peek(Kind::Print) && !peek(Kind::End))
-        error("Unexpected Token ", ts.current());
+    consume(Kind::Print);
 }
 
 void Parser::parse(std::istream& is)
@@ -176,6 +179,8 @@ Complex Parser::resolve_func()
     expect(Kind::Assign);
     parse_func_term(f);
 
+    Args test_args(f.num_params(), 1);
+    f(test_args);
     table.set_custom_func(name, f);
     hasResult = false;
     return 0;

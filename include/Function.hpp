@@ -23,6 +23,8 @@ public:
 
     const std::string& name() const { return funcName; }
 
+    std::size_t num_params() const { return vars.size(); }
+
 private:
     SymbolTable& table;
     std::string funcName;
