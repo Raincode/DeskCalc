@@ -36,6 +36,7 @@ private:
     Complex resolve_func();
     Args parse_args();
     Complex func_call();
+    void list(const std::string& name);
     void parse_param_list(Function& func);
     void parse_func_term(Function& func);
 

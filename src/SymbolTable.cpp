@@ -1,9 +1,13 @@
 #include "SymbolTable.hpp"
 
 #include <cassert>
+#include <iostream>
+#include <numeric>
 #include <stdexcept>
 
 #include <mps/stl_util.hpp>
+
+#include "math_util.hpp"
 
 Complex SymbolTable::value(const std::string& var)
 {
@@ -101,16 +105,40 @@ void SymbolTable::set_function(const std::string& name, ComplexFunc func)
     funcTable[name] = func;
 }
 
+bool SymbolTable::has_list(const std::string& name) const
+{
+    return mps::stl::contains(listTable, name);
+}
+
+bool SymbolTable::has_list_func(const std::string& name) const
+{
+    return mps::stl::contains(listFuncTable, name);
+}
+
+void SymbolTable::set_list(const std::string& name, std::vector<Complex>&& list)
+{
+    listTable[name] = std::move(list);
+}
+
+Complex SymbolTable::call_list_func_with(const std::string& func, const std::string& list)
+{
+    if (!has_list(list))
+        throw std::runtime_error{ "List " + list + " is not defined" };
+    if (!has_list_func(func))
+        throw std::runtime_error{ "List Function " + func + " is not defined" };
+    return listFuncTable[func](listTable[list]);
+}
+
 void SymbolTable::add_constants()
 {
     set_const("i", { 0, 1 });
-    set_const("pi", std::acos(-1));
+    set_const("pi", pi);
     set_const("e", 2.7182818284590452354);
 }
 
 #define MAKE_FUNC(f) [] (const Complex& c) { return (f)(c); }
 
-#define MAKE_FUNC_COMPLEX(f) \
+#define MAKE_PROXY_FUNC(f) \
     [] (const Complex& c) { \
         if (c.imag()) \
             throw std::runtime_error{ "Function " #f " not defined for complex numbers" }; \
@@ -119,33 +147,65 @@ void SymbolTable::add_constants()
 
 #define MAKE_REAL_FUNC(f) [] (double d) { return (f)(d); }
 
+void SymbolTable::add_trig_funcs()
+{
+    funcTable["sin"] = MAKE_FUNC(std::sin);
+    funcTable["cos"] = MAKE_FUNC(std::cos);
+    funcTable["tan"] = MAKE_FUNC(std::tan);
+    funcTable["asin"] = MAKE_FUNC(std::asin);
+    funcTable["acos"] = MAKE_FUNC(std::acos);
+    funcTable["atan"] = MAKE_FUNC(std::atan);
+    funcTable["sinh"] = MAKE_FUNC(std::sinh);
+    funcTable["cosh"] = MAKE_FUNC(std::cosh);
+    funcTable["tanh"] = MAKE_FUNC(std::tanh);
+    funcTable["asinh"] = MAKE_FUNC(std::asinh);
+    funcTable["acosh"] = MAKE_FUNC(std::acosh);
+    funcTable["atanh"] = MAKE_FUNC(std::atanh);
+
+    using namespace std;
+    funcTable["deg"] = MAKE_PROXY_FUNC(deg);
+    funcTable["rad"] = MAKE_PROXY_FUNC(rad);
+}
+
+void SymbolTable::add_temp_conversions()
+{
+    using namespace temp;
+    funcTable["CtoK"] = MAKE_PROXY_FUNC(CtoK);
+    funcTable["KtoC"] = MAKE_PROXY_FUNC(KtoC);
+    funcTable["FtoC"] = MAKE_PROXY_FUNC(FtoC);
+    funcTable["CtoF"] = MAKE_PROXY_FUNC(CtoF);
+    funcTable["FtoK"] = MAKE_PROXY_FUNC(FtoK);
+    funcTable["KtoF"] = MAKE_PROXY_FUNC(KtoF);
+}
+
 void SymbolTable::add_default_funcs()
 {
+    add_trig_funcs();
+    add_temp_conversions();
+
+    funcTable["abs"] = MAKE_FUNC(std::abs);
+    funcTable["norm"] = MAKE_FUNC(std::norm);
+    funcTable["arg"] = MAKE_FUNC(std::arg);
+    funcTable["exp"] = MAKE_FUNC(std::exp);
+
+    funcTable["sqrt"] = MAKE_FUNC(std::sqrt);
+    funcTable["ln"] = MAKE_FUNC(std::log);
+    funcTable["log"] = MAKE_FUNC(std::log10);
+
+    funcTable["Re"] = MAKE_FUNC(std::real);
+    funcTable["Im"] = MAKE_FUNC(std::imag);
+
+    listFuncTable["sum"] = [] (const ComplexList& list) { return sum(list); };
+    listFuncTable["avg"] = [] (const ComplexList& list) { return avg(list); };
+    listFuncTable["len"] = [](const ComplexList& list) { return len(list); };
+    listFuncTable["sx"] = [](const ComplexList& list) { return standard_deviation(list); };
+    listFuncTable["ux"] = [](const ComplexList& list) { return standard_deviation(list) / std::sqrt(static_cast<double>(len(list))); };
+
     using namespace std;
-
-    funcTable["sin"] = MAKE_FUNC(sin);
-    funcTable["cos"] = MAKE_FUNC(cos);
-    funcTable["tan"] = MAKE_FUNC(tan);
-    funcTable["asin"] = MAKE_FUNC(asin);
-    funcTable["acos"] = MAKE_FUNC(acos);
-    funcTable["atan"] = MAKE_FUNC(atan);
-    funcTable["sinh"] = MAKE_FUNC(sinh);
-    funcTable["cosh"] = MAKE_FUNC(cosh);
-    funcTable["tanh"] = MAKE_FUNC(tanh);
-
-    funcTable["abs"] = MAKE_FUNC(abs);
-    funcTable["norm"] = MAKE_FUNC(norm);
-    funcTable["arg"] = MAKE_FUNC(arg);
-    funcTable["exp"] = MAKE_FUNC(exp);
-
-    funcTable["sqrt"] = MAKE_FUNC(sqrt);
-    funcTable["ln"] = MAKE_FUNC(log);
-    funcTable["log"] = MAKE_FUNC(log10);
-
-    funcTable["floor"] = MAKE_FUNC_COMPLEX(floor);
-    funcTable["ceil"] = MAKE_FUNC_COMPLEX(ceil);
-    funcTable["round"] = MAKE_FUNC_COMPLEX(round);
-    funcTable["trunc"] = MAKE_FUNC_COMPLEX(trunc);
+    funcTable["floor"] = MAKE_PROXY_FUNC(floor);
+    funcTable["ceil"] = MAKE_PROXY_FUNC(ceil);
+    funcTable["round"] = MAKE_PROXY_FUNC(round);
+    funcTable["trunc"] = MAKE_PROXY_FUNC(trunc);
 }
 
 #undef MAKE_FUNC

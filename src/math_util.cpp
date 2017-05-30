@@ -38,10 +38,10 @@ Complex safe_mod(Complex left, Complex right)
     return safe_mod(static_cast<long>(ltrunc), static_cast<long>(rtrunc));
 }
 
-unsigned factorial(int n)
+double factorial(int n)
 {
     if (n < 0) throw runtime_error{ "Factorial not defined for negative numbers" };
-    unsigned ret{ 1 };
+    double ret{ 1 };
     for (int i = 2; i <= n; ++i)
         ret *= i;
     return ret;
@@ -60,4 +60,35 @@ Complex impedance_parallel(Complex R1, Complex R2)
     if (is_zero(R1) && is_zero(R2))
         throw runtime_error{ "Resistors must be greater than 0" };
     return R1 * R2 / (R1 + R2);
+}
+
+Complex sqr(Complex num)
+{
+    return num * num;
+}
+
+std::size_t len(const ComplexList& list)
+{
+    return list.size();
+}
+
+Complex sum(const ComplexList& list)
+{
+    return std::accumulate(cbegin(list), cend(list), Complex{});
+}
+
+Complex avg(const ComplexList& list)
+{
+    return sum(list) / static_cast<double>(len(list));
+}
+
+Complex standard_deviation(const ComplexList& list)
+{
+    const auto acc_distance_squared = [a = avg(list)](auto sum, auto next) 
+    { return sum + sqr(next - a); };
+
+    const auto s_sqr = std::accumulate(cbegin(list), cend(list), Complex{}, acc_distance_squared)
+                       / static_cast<double>(len(list) - 1);
+
+    return std::sqrt(s_sqr);
 }

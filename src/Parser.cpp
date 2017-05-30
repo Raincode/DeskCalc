@@ -119,9 +119,29 @@ Complex Parser::resolve_string_token()
 Complex Parser::resolve_var()
 {
     auto name = prevTok.str;
-    if (consume(Kind::Assign))
-        table.set_var(name, expr());
+    if (consume(Kind::Assign)) {
+        if (peek(Kind::LBracket)) {
+            list(name);
+            hasResult = false;
+            return 0;
+        }
+        else
+            table.set_var(name, expr());
+    }
     return table.value(name);
+}
+
+void Parser::list(const std::string& name)
+{
+    expect(Kind::LBracket);
+    std::vector<Complex> values;
+    if (!peek(Kind::RBracket)) {
+        do {
+            values.push_back(expr());
+        } while (consume(Kind::Comma));
+    }
+    table.set_list(name, std::move(values));
+    expect(Kind::RBracket);
 }
 
 Args Parser::parse_args()
@@ -171,6 +191,13 @@ Complex Parser::resolve_func()
         return func_call();
     if (table.has_user_func(name))
         return table.value(name, parse_args());
+    if (table.has_list_func(name)) {
+        expect(Kind::LParen);
+        expect(Kind::String);
+        auto val = table.call_list_func_with(name, prevTok.str);
+        expect(Kind::RParen);
+        return val;
+    }
 
     Function f{ table };
     f.set_name(name);
