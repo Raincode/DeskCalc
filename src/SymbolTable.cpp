@@ -136,7 +136,7 @@ void SymbolTable::add_constants()
     set_const("e", 2.7182818284590452354);
 }
 
-#define MAKE_FUNC(f) [] (const Complex& c) { return (f)(c); }
+#define MAKE_FUNC(f) [] (const auto& c) { return (f)(c); }
 
 #define MAKE_PROXY_FUNC(f) \
     [] (const Complex& c) { \
@@ -144,8 +144,6 @@ void SymbolTable::add_constants()
             throw std::runtime_error{ "Function " #f " not defined for complex numbers" }; \
         return Complex{ (f)(c.real()) }; \
     }
-
-#define MAKE_REAL_FUNC(f) [] (double d) { return (f)(d); }
 
 void SymbolTable::add_trig_funcs()
 {
@@ -188,6 +186,8 @@ void SymbolTable::add_default_funcs()
     funcTable["arg"] = MAKE_FUNC(std::arg);
     funcTable["exp"] = MAKE_FUNC(std::exp);
 
+    funcTable["sqr"] = [] (auto n) { return n*n; };
+    funcTable["cb"] = [] (auto n) { return n*n*n; };
     funcTable["sqrt"] = MAKE_FUNC(std::sqrt);
     funcTable["ln"] = MAKE_FUNC(std::log);
     funcTable["log"] = MAKE_FUNC(std::log10);
@@ -206,6 +206,8 @@ void SymbolTable::add_default_funcs()
     funcTable["ceil"] = MAKE_PROXY_FUNC(ceil);
     funcTable["round"] = MAKE_PROXY_FUNC(round);
     funcTable["trunc"] = MAKE_PROXY_FUNC(trunc);
+
+    funcTable["cbrt"] = MAKE_PROXY_FUNC(cbrt);
 }
 
 #undef MAKE_FUNC

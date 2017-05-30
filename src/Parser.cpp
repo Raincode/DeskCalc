@@ -11,7 +11,10 @@
 #include "SymbolTable.hpp"
 
 Parser::Parser(SymbolTable& table)
-    : table{ table } { }
+    : table{ table } 
+{ 
+    table.set_const("deg", pi / 180); // 90deg converts 90 into rad
+}
 
 void Parser::parse()
 {
@@ -198,6 +201,8 @@ Complex Parser::resolve_func()
         expect(Kind::RParen);
         return val;
     }
+    if (table.has_var(name))
+        return table.value(name) * prim();
 
     Function f{ table };
     f.set_name(name);

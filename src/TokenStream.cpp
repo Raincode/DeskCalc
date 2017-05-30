@@ -2,7 +2,7 @@
 
 #include <cassert>
 #include <cctype>
-#include <iomanip>
+#include <iostream>
 #include <sstream>
 
 TokenStream::TokenStream(std::istream& is)

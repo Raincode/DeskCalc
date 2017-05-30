@@ -27,7 +27,7 @@ void Calculator::run(int argc, char* argv[])
         run_cli();
         break;
     case 2:
-        if (std::string(argv[1]) == "-")
+        if (string(argv[1]) == "-")
             run_cli();
         else if (!run_file(argv[1]))
             exec(argv[1]);
@@ -71,7 +71,7 @@ void Calculator::exec(const std::string& input)
         }
     }
     catch (runtime_error& e) {
-        std::cerr << e.what() << '\n';
+        cerr << e.what() << '\n';
     }
 }
 
@@ -88,7 +88,7 @@ void Calculator::show_intro() const
     else
         cout << intro;
 
-    static Warning w{ "Copyright (C) 2017  Matthias Stauber\n"
+    static Warning w{ "Copyright (C) 2017 Matthias Stauber\n"
                       "This program comes with ABSOLUTELY NO WARRANTY\n" };
 }
 
@@ -124,9 +124,23 @@ void Calculator::register_commands()
         }
     };
 
+    commands["copy"] = [this] {
+        auto str = mps::str::to_string(parser.symbol_table().value("ans"));
+        mps::set_clipboard_text(str);
+    };
+
     commands["copy,"] = [this] {
-        auto str = mps::str::to_string(parser.symbol_table().value("_"));
+        auto str = mps::str::to_string(parser.symbol_table().value("ans"));
         mps::set_clipboard_text(mps::str::format_number_EU(str));
+    };
+
+    commands["table"] = [this] {
+        string func;
+        cout << "Function: ";
+        if (!(cin >> func))
+            return;
+
+
     };
 }
 
