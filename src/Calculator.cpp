@@ -17,6 +17,7 @@ Calculator::Calculator()
 {
     register_commands();
     symbolTable.add_constants();
+    symbolTable.add_const("deg", pi / 180); // 90deg converts 90 into rad
     symbolTable.add_default_funcs();
 }
 
@@ -54,24 +55,25 @@ void Calculator::run_cli()
 
     for (string s; getline(cin, s); ) {
         s = mps::str::trim(s);
-        if (s.size() && !handle_cmd(s))
-            exec(s);
+        try {
+            if (s.size() && !handle_cmd(s))
+                exec(s);
+        }
+        catch (runtime_error& e) {
+            cerr << e.what() << '\n';
+        }
         cout << prompt;
     }
 }
 
 void Calculator::exec(const std::string& input)
 {
-    try {
-        parser.parse(input);
-        if (parser.has_result()) {
-            parser.symbol_table().set_var("_", parser.result());
-            parser.symbol_table().set_var("ans", parser.result());
-            print_complex(cout, parser.result());
-        }
-    }
-    catch (runtime_error& e) {
-        cerr << e.what() << '\n';
+    parser.parse(input);
+    if (parser.has_result()) {
+        parser.symbol_table().set_var("_", parser.result());
+        parser.symbol_table().set_var("ans", parser.result());
+        print_complex(cout, parser.result());
+        cout << '\n';
     }
 }
 
@@ -125,40 +127,19 @@ void Calculator::register_commands()
     };
 
     commands["copy"] = [this] {
-        auto str = mps::str::to_string(parser.symbol_table().value("ans"));
+        auto str = mps::str::to_string(parser.symbol_table().value_of("ans"));
         mps::set_clipboard_text(str);
     };
 
     commands["copy,"] = [this] {
-        auto str = mps::str::to_string(parser.symbol_table().value("ans"));
+        auto str = mps::str::to_string(parser.symbol_table().value_of("ans"));
         mps::set_clipboard_text(mps::str::format_number_EU(str));
     };
 
     commands["table"] = [this] {
-        string func;
-        cout << "Function: ";
-        if (!(cin >> func))
-            return;
-
-
+        string func = mps::get_str("Function: ");
+        double low = mps::get_num<double>("Low: ");
+        double high = mps::get_num<double>("High: ");
+        std::cerr << "Sorry, table feature not implemented yet.\n";
     };
-}
-
-void print_complex(std::ostream& os, Complex n)
-{
-    using std::cout;
-
-    if (n.imag()) {
-        if (n.real()) {
-            cout << n.real();
-            if (n.imag() > 0)
-                cout << '+';
-        }
-        if (std::abs(n.imag()) != 1)
-            cout << n.imag();
-        cout << 'i';
-    }
-    else
-        cout << n.real();
-    cout << '\n';
 }

@@ -24,5 +24,3 @@ private:
     Parser parser;
     std::map<std::string, std::function<void()>> commands;
 };
-
-void print_complex(std::ostream& os, Complex num);

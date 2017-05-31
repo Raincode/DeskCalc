@@ -24,6 +24,7 @@
 
 #include <algorithm>
 #include <map>
+#include <string>
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace mps {
@@ -54,10 +55,17 @@ inline bool contains(const C& c, const V& val)
     return find(c, val) != end(c);
 }
 
-template<typename K, typename V, typename T>
-inline bool contains(const std::map<K,V>& map, const T& value)
+template<typename K, typename V>
+inline bool contains(const std::map<K,V>& map, const K& key)
 {
-    return map.find(value) != cend(map);
+    return map.find(key) != cend(map);
+}
+
+template<class K, class V, class Pred>
+inline bool contains_if(const std::map<K, V>& map, const K& key, Pred pred)
+{
+    auto found = map.find(key);
+    return found != cend(map) && pred(found->second);
 }
 
 template<typename C, typename Pred>
@@ -69,8 +77,7 @@ inline auto erase_if(C& c, Pred pred)
 template<class K, class V, class Pred>
 inline void erase_if(std::map<K,V>& map, Pred pred)
 {
-	for (auto i = begin(map); i != end(map) ;)
-	{
+	for (auto i = begin(map); i != end(map); ) {
 		if (pred(*i))
 			i = map.erase(i);
 		else
@@ -88,6 +95,24 @@ template<class C, class Func>
 inline void for_each(C& c, Func f)
 {
 	std::for_each(begin(c), end(c), f);
+}
+
+template<class K, class V>
+inline void insert_unique(std::map<K,V>& map, const K& key, const V& val)
+{
+	auto found = map.find(key);
+	if (found != cend(map))
+		throw std::runtime_error{ "insert_unique failed - " + key + " already in map" };
+	map[key] = val;
+}
+
+template<class K, class V>
+inline typename std::map<K,V>::const_iterator find_or_throw(const std::map<K,V>& map, const K& key, const std::string& msg)
+{
+	auto found = map.find(key);
+	if (found == cend(map))
+		throw std::runtime_error{ msg };
+	return found;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

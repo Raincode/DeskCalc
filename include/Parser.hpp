@@ -26,19 +26,24 @@ public:
 private:
     void parse();
     void stmt();
+    void func_def();
+    void parse_param_list(Function& func);
+    void parse_func_term(Function& func);
+
     Complex expr();
     Complex term();
     Complex sign();
     Complex postfix();
     Complex prim();
-    Complex resolve_string_token();
-    Complex resolve_var();
-    Complex resolve_func();
-    Args parse_args();
+    Complex resolve_str_tok();
     Complex func_call();
-    void list(const std::string& name);
-    void parse_param_list(Function& func);
-    void parse_func_term(Function& func);
+    Complex var_def();
+
+    Complex no_result();
+
+    List list_elems();
+    List list();
+    List arg_list();
 
     bool peek(Kind kind) const;
     bool consume(Kind kind);

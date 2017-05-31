@@ -12,18 +12,15 @@ class SymbolTable;
 
 class Function {
 public:
-    Function(SymbolTable& table)
-        : table{ table } { }
+    Function(const std::string& name, SymbolTable& table);
 
-    Complex operator()(const Args& args) const;
+    Complex operator()(const List& args) const;
 
     void set_term(const std::string& t) { term = t; }
     void add_var(const std::string& v) { vars.push_back(v); }
-    void set_name(const std::string& n) { funcName = n; }
 
+    std::size_t numArgs() const { return vars.size(); }
     const std::string& name() const { return funcName; }
-
-    std::size_t num_params() const { return vars.size(); }
 
 private:
     SymbolTable& table;

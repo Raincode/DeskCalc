@@ -13,7 +13,6 @@
 Parser::Parser(SymbolTable& table)
     : table{ table } 
 { 
-    table.set_const("deg", pi / 180); // 90deg converts 90 into rad
 }
 
 void Parser::parse()
@@ -21,13 +20,6 @@ void Parser::parse()
     ts.get();
     while (!consume(Kind::End))
         stmt();
-}
-
-void Parser::stmt()
-{
-    hasResult = true;
-    res = expr();
-    consume(Kind::Print);
 }
 
 void Parser::parse(std::istream& is)
@@ -40,6 +32,35 @@ void Parser::parse(const std::string& str)
 {
     ts.set_input(str);
     parse();
+}
+
+void Parser::stmt()
+{
+    hasResult = true;
+    if (peek(Kind::FuncDef)) {
+        func_def();
+        hasResult = false;
+    }
+    else if (!peek(Kind::Print))
+        res = expr();
+    if (!peek(Kind::End))
+        expect(Kind::Print);
+}
+
+void Parser::func_def()
+{
+    expect(Kind::FuncDef);
+    expect(Kind::String);
+    Function func{ prevTok.str, table };
+
+    parse_param_list(func);
+    expect(Kind::Assign);
+
+    parse_func_term(func);
+    List test_args(func.numArgs(), 1);
+    func(test_args);
+
+    table.set_func(func.name(), func);
 }
 
 Complex Parser::expr()
@@ -76,10 +97,9 @@ Complex Parser::term()
 
 Complex Parser::sign()
 {
-    if (consume(Kind::Plus))
-        return postfix();
     if (consume(Kind::Minus)) 
         return -postfix();
+    consume(Kind::Plus);
     return postfix();
 }
 
@@ -88,12 +108,13 @@ Complex Parser::postfix()
     auto left = prim();
     for (;;) {
         if (consume(Kind::Pow))
-            return std::pow(left, sign());
-        if (consume(Kind::String)) 
-            return left * table.value(prevTok.str);
-        if (consume(Kind::Fac)) 
-            return factorial(left);
-        return left;
+            return pretty_pow(left, sign());
+        else if (consume(Kind::String))
+            return left * table.value_of(prevTok.str);
+        else if (consume(Kind::Fac))
+            left = factorial(left);
+        else
+            return left;
     }
 }
 
@@ -101,8 +122,8 @@ Complex Parser::prim()
 {
     if (consume(Kind::Number)) 
         return prevTok.num;
-    if (consume(Kind::String)) 
-        return resolve_string_token();
+    if (consume(Kind::String))
+        return resolve_str_tok();
     if (consume(Kind::LParen)) {
         auto val = expr();
         expect(Kind::RParen);
@@ -112,59 +133,83 @@ Complex Parser::prim()
     throw std::logic_error{ "Fall through prim()" }; // silence C4715
 }
 
-Complex Parser::resolve_string_token()
+Complex Parser::resolve_str_tok()
 {
     if (peek(Kind::LParen))
-        return resolve_func();
-    return resolve_var();
-}
-
-Complex Parser::resolve_var()
-{
-    auto name = prevTok.str;
-    if (consume(Kind::Assign)) {
-        if (peek(Kind::LBracket)) {
-            list(name);
-            hasResult = false;
-            return 0;
-        }
-        else
-            table.set_var(name, expr());
+        return func_call();
+    if (peek(Kind::Assign))
+        return var_def();
+    if (table.has_list(prevTok.str)) {
+        if (!peek(Kind::Print) && !peek(Kind::End))
+            error("Unexpected Token ", ts.current());
+        print_list(std::cout, table.list(prevTok.str));
+        std::cout << '\n';
+        return no_result();
     }
-    return table.value(name);
+    return table.value_of(prevTok.str);
 }
 
-void Parser::list(const std::string& name)
+List Parser::list_elems()
 {
-    expect(Kind::LBracket);
-    std::vector<Complex> values;
-    if (!peek(Kind::RBracket)) {
+    List list;
+    if (!peek(Kind::RParen) && !peek(Kind::RBracket)) {
         do {
-            values.push_back(expr());
+            list.emplace_back(expr());
         } while (consume(Kind::Comma));
     }
-    table.set_list(name, std::move(values));
-    expect(Kind::RBracket);
+    return list;
 }
 
-Args Parser::parse_args()
+List Parser::list()
 {
-    expect(Kind::LParen);
-    Args args;
-    do {
-        args.push_back(expr());
-    } while (consume(Kind::Comma));
-    expect(Kind::RParen);
-    return args;
+    expect(Kind::LBracket);
+    auto l = list_elems();
+    expect(Kind::RBracket);
+    return l;
+}
+
+Complex Parser::no_result()
+{
+    hasResult = false;
+    return 0; // dummy value
+}
+
+Complex Parser::var_def()
+{
+    auto name = prevTok.str;
+    expect(Kind::Assign);
+    if (peek(Kind::LBracket)) {
+        table.set_list(name, list());
+        return no_result();
+    }
+    if (table.isset(name) && !table.has_var(name))
+        error(name, " is already defined");
+    auto val = expr();
+    table.set_var(name, val);
+    return val;
 }
 
 Complex Parser::func_call()
 {
-    auto funcName = prevTok.str;
+    auto name = prevTok.str;
+    return table.call_func(name, arg_list());
+}
+
+List Parser::arg_list()
+{
     expect(Kind::LParen);
-    auto result = table.value(funcName, expr());
+    List args;
+    if (peek(Kind::String) && table.has_list(ts.current().str)) {
+        consume(Kind::String);
+        args = table.list(prevTok.str);
+    }
+    else {
+        args = list_elems();
+        if (args.empty())
+            error("Invalid empty argument list");
+    }
     expect(Kind::RParen);
-    return result;
+    return args;
 }
 
 void Parser::parse_param_list(Function& func)
@@ -185,37 +230,6 @@ void Parser::parse_func_term(Function& func)
         ts.get();
     }
     func.set_term(term.str());
-}
-
-Complex Parser::resolve_func()
-{
-    auto name = prevTok.str;
-    if (table.has_func(name))
-        return func_call();
-    if (table.has_user_func(name))
-        return table.value(name, parse_args());
-    if (table.has_list_func(name)) {
-        expect(Kind::LParen);
-        expect(Kind::String);
-        auto val = table.call_list_func_with(name, prevTok.str);
-        expect(Kind::RParen);
-        return val;
-    }
-    if (table.has_var(name))
-        return table.value(name) * prim();
-
-    Function f{ table };
-    f.set_name(name);
-    parse_param_list(f);
-
-    expect(Kind::Assign);
-    parse_func_term(f);
-
-    Args test_args(f.num_params(), 1);
-    f(test_args);
-    table.set_custom_func(name, f);
-    hasResult = false;
-    return 0;
 }
 
 bool Parser::consume(Kind kind)

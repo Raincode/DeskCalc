@@ -115,6 +115,7 @@
   <ItemGroup>
     <ClInclude Include="..\..\include\ErrorReporter.hpp" />
     <ClInclude Include="..\..\include\Function.hpp" />
+    <ClInclude Include="..\..\include\SymbolGuard.hpp" />
     <ClInclude Include="..\..\include\TokenStream.hpp" />
     <ClInclude Include="..\..\include\math_util.hpp" />
     <ClInclude Include="..\..\include\Parser.hpp" />
@@ -124,6 +125,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\Function.cpp" />
+    <ClCompile Include="..\..\src\SymbolGuard.cpp" />
     <ClCompile Include="..\..\src\TokenStream.cpp" />
     <ClCompile Include="..\..\src\math_util.cpp" />
     <ClCompile Include="..\..\src\Parser.cpp" />

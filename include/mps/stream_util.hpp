@@ -80,6 +80,17 @@ T get_num(const std::string& prompt, T min, T max)
     return n;
 }
 
+std::string get_str(const std::string& prompt)  // in future maybe add format?
+{
+    std::cout << prompt;
+    std::string ret;
+    if (!(std::cin >> ret)) {
+        std::cin.clear();
+        throw std::runtime_error{ "No Input" };
+    }
+    return ret;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 
 static inline void keep_window_open()

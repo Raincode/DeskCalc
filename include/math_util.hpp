@@ -19,18 +19,22 @@ T safe_mod(T left, T right)
     return left % right;
 }
 
-Complex sqr(Complex num);
-
 double factorial(int n);
 Complex factorial(Complex num);
 Complex impedance_parallel(Complex R1, Complex R2);
 
-std::size_t len(const ComplexList& list);
-Complex sum(const ComplexList& list);
-Complex avg(const ComplexList& list);
-Complex standard_deviation(const ComplexList& list);
+std::size_t len(const List& list);
+Complex sum(const List& list);
+Complex sqr_sum(const List& list);
+Complex avg(const List& list);
+Complex standard_deviation(const List& list);
 
 constexpr double pi{ 3.1415926535897932385 };
+
+inline Complex sqr(Complex num)
+{
+    return num * num;
+}
 
 constexpr double deg(double rad)
 {
@@ -41,6 +45,8 @@ constexpr double rad(double deg)
 {
     return pi / 180 * deg;
 }
+
+Complex pretty_pow(const Complex& base, const Complex& exp);
 
 namespace temp {
     constexpr double absoluteZero{ -273.1499999999999773 };

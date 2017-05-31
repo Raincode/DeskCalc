@@ -9,206 +9,191 @@
 
 #include "math_util.hpp"
 
-Complex SymbolTable::value(const std::string& var)
-{
-    auto found = varTable.find(var);
-    if (found == end(varTable))
-        throw std::runtime_error{ var + " is undefined." };
-    return found->second.value;
-}
+using namespace mps::stl;
 
-void SymbolTable::set_var(const std::string& name, Complex value)
-{
-    set_value(name, { value, Var::Mutable });
-}
+#define CHECK_SINGLE_ARG(f) \
+    if (list.size() != 1) throw std::runtime_error{ #f " expects exactly 1 argument" };
 
-void SymbolTable::set_const(const std::string& name, Complex value)
-{
-    set_value(name, { value, Var::Const });
-}
+#define MAKE_COMPLEX_FUNC(f) [] (const List& list) { \
+    CHECK_SINGLE_ARG(f) \
+    return (f)(list.front()); }
 
-SymbolTable::Var SymbolTable::get_var(const std::string& name) const
+#define MAKE_PROXY_FUNC(f) [] (const Complex& c) { \
+        if (c.imag()) \
+            throw std::runtime_error{ #f " not defined for complex numbers" }; \
+        return Complex{ (f)(c.real()) }; }
+
+#define MAKE_REAL_FUNC(f) [] (const List& list) { \
+    CHECK_SINGLE_ARG(f) \
+    if (list.front().imag()) \
+        throw std::runtime_error{ #f " not defined for complex numbers" }; \
+    return Complex{ (f)(list.front().real()) }; }
+
+void SymbolTable::set_var(ConstStrRef name, Complex val)
 {
     auto found = varTable.find(name);
-    if (found == end(varTable))
-        throw std::runtime_error{ name + " is not defined" };
-    return found->second;
-}
-
-bool SymbolTable::has_var(const std::string& name) const
-{
-    return mps::stl::contains(varTable, name);
-}
-
-void SymbolTable::erase_var(const std::string& name)
-{
-    auto found = varTable.find(name);
-    assert(found != end(varTable));
-    varTable.erase(found);
-}
-
-void SymbolTable::set_value(const std::string& name, Var var)
-{
-    auto found = varTable.find(name);
-    if (found != end(varTable) && found->second.type == Var::Const)
+    if (found == cend(varTable) || !found->second.isConst)
+        varTable[name] = make_var(val);
+    else
         throw std::runtime_error{ "Cannot override constant " + name };
-    varTable[name] = var;
 }
 
-Complex SymbolTable::value(const std::string& name, Complex arg)
+void SymbolTable::set_list(ConstStrRef name, List&& list)
 {
-    auto found = funcTable.find(name);
-    if (found == end(funcTable))
-        throw std::runtime_error{ name + " is undefined." };
-    return found->second(arg);
+    listTable[name] = list;
 }
 
-Complex SymbolTable::value(const std::string & name, const Args & args)
+void SymbolTable::add_const(ConstStrRef name, Complex val)
 {
-    auto found = userFuncTable.find(name);
-    if (found == end(userFuncTable))
-        throw std::runtime_error{ name + " is undefined." };
-    return found->second(args);
+    insert_unique(varTable, name, make_const(val));
 }
 
-void SymbolTable::set_custom_func(const std::string& name, ComplexMultiFunc func)
+void SymbolTable::set_func(ConstStrRef name, Func func)
 {
-    auto found = userFuncTable.find(name);
-    auto found2 = funcTable.find(name);
-    if (found != end(userFuncTable) || found2 != end(funcTable))
-        throw std::runtime_error{ "Cannot override function " + name };
-    userFuncTable[name] = func;
-}
-
-bool SymbolTable::has_func(const std::string& name) const
-{
-    return mps::stl::contains(funcTable, name);
-}
-
-bool SymbolTable::has_user_func(const std::string & name) const
-{
-    return mps::stl::contains(userFuncTable, name);
-}
-
-void SymbolTable::erase_func(const std::string& name)
-{
-    auto found = funcTable.find(name);
-    assert(found != end(funcTable));
-    funcTable.erase(found);
-}
-
-void SymbolTable::set_function(const std::string& name, ComplexFunc func)
-{
-    auto found = funcTable.find(name);
-    if (found != end(funcTable))
-        throw std::runtime_error{ "Cannot override built-in function " + name };
     funcTable[name] = func;
 }
 
-bool SymbolTable::has_list(const std::string& name) const
+Complex SymbolTable::value_of(ConstStrRef var) const
 {
-    return mps::stl::contains(listTable, name);
+    return find_or_throw(varTable, var, "Variable " + var + " is undefined")->second.val;
 }
 
-bool SymbolTable::has_list_func(const std::string& name) const
+const List& SymbolTable::list(ConstStrRef name) const
 {
-    return mps::stl::contains(listFuncTable, name);
+    return find_or_throw(listTable, name, "List " + name + " is undefined")->second;
 }
 
-void SymbolTable::set_list(const std::string& name, std::vector<Complex>&& list)
+Complex SymbolTable::call_func(ConstStrRef func, const List& arg) const
 {
-    listTable[name] = std::move(list);
+    return find_or_throw(funcTable, func, "Function " + func + " is undefined")->second(arg);
 }
 
-Complex SymbolTable::call_list_func_with(const std::string& func, const std::string& list)
+bool SymbolTable::is_const(ConstStrRef name) const
 {
-    if (!has_list(list))
-        throw std::runtime_error{ "List " + list + " is not defined" };
-    if (!has_list_func(func))
-        throw std::runtime_error{ "List Function " + func + " is not defined" };
-    return listFuncTable[func](listTable[list]);
+    return contains_if(varTable, name, [](const auto& item) { return item.isConst; });
+}
+
+bool SymbolTable::has_var(ConstStrRef name) const
+{
+    return contains(varTable, name);
+}
+
+bool SymbolTable::has_list(ConstStrRef name) const
+{
+    return contains(listTable, name);
+}
+
+bool SymbolTable::has_func(ConstStrRef name) const
+{
+    return contains(funcTable, name);
+}
+
+bool SymbolTable::isset(ConstStrRef name) const
+{
+    return has_var(name) || has_list(name) || has_func(name);
+}
+
+void SymbolTable::remove_var(ConstStrRef name)
+{
+    varTable.erase(name);
+}
+
+void SymbolTable::remove_list(ConstStrRef name)
+{
+    listTable.erase(name);
+}
+
+void SymbolTable::remove_func(ConstStrRef name)
+{
+    funcTable.erase(name);
 }
 
 void SymbolTable::add_constants()
 {
-    set_const("i", { 0, 1 });
-    set_const("pi", pi);
-    set_const("e", 2.7182818284590452354);
+    add_const("i", { 0, 1 });
+    add_const("pi", pi);
+    add_const("e", 2.7182818284590452354);
 }
-
-#define MAKE_FUNC(f) [] (const auto& c) { return (f)(c); }
-
-#define MAKE_PROXY_FUNC(f) \
-    [] (const Complex& c) { \
-        if (c.imag()) \
-            throw std::runtime_error{ "Function " #f " not defined for complex numbers" }; \
-        return Complex{ (f)(c.real()) }; \
-    }
 
 void SymbolTable::add_trig_funcs()
 {
-    funcTable["sin"] = MAKE_FUNC(std::sin);
-    funcTable["cos"] = MAKE_FUNC(std::cos);
-    funcTable["tan"] = MAKE_FUNC(std::tan);
-    funcTable["asin"] = MAKE_FUNC(std::asin);
-    funcTable["acos"] = MAKE_FUNC(std::acos);
-    funcTable["atan"] = MAKE_FUNC(std::atan);
-    funcTable["sinh"] = MAKE_FUNC(std::sinh);
-    funcTable["cosh"] = MAKE_FUNC(std::cosh);
-    funcTable["tanh"] = MAKE_FUNC(std::tanh);
-    funcTable["asinh"] = MAKE_FUNC(std::asinh);
-    funcTable["acosh"] = MAKE_FUNC(std::acosh);
-    funcTable["atanh"] = MAKE_FUNC(std::atanh);
-
     using namespace std;
-    funcTable["deg"] = MAKE_PROXY_FUNC(deg);
-    funcTable["rad"] = MAKE_PROXY_FUNC(rad);
+
+    funcTable["sin"] = MAKE_COMPLEX_FUNC(sin);
+    funcTable["cos"] = MAKE_COMPLEX_FUNC(cos);
+    funcTable["tan"] = MAKE_COMPLEX_FUNC(tan);
+    funcTable["asin"] = MAKE_COMPLEX_FUNC(asin);
+    funcTable["acos"] = MAKE_COMPLEX_FUNC(acos);
+    funcTable["atan"] = MAKE_COMPLEX_FUNC(atan);
+    funcTable["sinh"] = MAKE_COMPLEX_FUNC(sinh);
+    funcTable["cosh"] = MAKE_COMPLEX_FUNC(cosh);
+    funcTable["tanh"] = MAKE_COMPLEX_FUNC(tanh);
+    funcTable["asinh"] = MAKE_COMPLEX_FUNC(asinh);
+    funcTable["acosh"] = MAKE_COMPLEX_FUNC(acosh);
+    funcTable["atanh"] = MAKE_COMPLEX_FUNC(atanh);
+
+    funcTable["deg"] = MAKE_REAL_FUNC(deg);
+    funcTable["rad"] = MAKE_REAL_FUNC(rad);
 }
 
 void SymbolTable::add_temp_conversions()
 {
     using namespace temp;
-    funcTable["CtoK"] = MAKE_PROXY_FUNC(CtoK);
-    funcTable["KtoC"] = MAKE_PROXY_FUNC(KtoC);
-    funcTable["FtoC"] = MAKE_PROXY_FUNC(FtoC);
-    funcTable["CtoF"] = MAKE_PROXY_FUNC(CtoF);
-    funcTable["FtoK"] = MAKE_PROXY_FUNC(FtoK);
-    funcTable["KtoF"] = MAKE_PROXY_FUNC(KtoF);
+    funcTable["CtoK"] = MAKE_REAL_FUNC(CtoK);
+    funcTable["KtoC"] = MAKE_REAL_FUNC(KtoC);
+    funcTable["FtoC"] = MAKE_REAL_FUNC(FtoC);
+    funcTable["CtoF"] = MAKE_REAL_FUNC(CtoF);
+    funcTable["FtoK"] = MAKE_REAL_FUNC(FtoK);
+    funcTable["KtoF"] = MAKE_REAL_FUNC(KtoF);
+}
+
+void SymbolTable::add_list_funcs()
+{
+    funcTable["sum"] = sum;
+    funcTable["sum2"] = sqr_sum;
+    funcTable["avg"] = avg;
+    funcTable["len"] = len;
+    funcTable["sx"] = standard_deviation;
+    funcTable["ux"] = [] (const List& list) { 
+        return standard_deviation(list) / std::sqrt(static_cast<double>(len(list))); 
+    };
 }
 
 void SymbolTable::add_default_funcs()
 {
     add_trig_funcs();
     add_temp_conversions();
-
-    funcTable["abs"] = MAKE_FUNC(std::abs);
-    funcTable["norm"] = MAKE_FUNC(std::norm);
-    funcTable["arg"] = MAKE_FUNC(std::arg);
-    funcTable["exp"] = MAKE_FUNC(std::exp);
-
-    funcTable["sqr"] = [] (auto n) { return n*n; };
-    funcTable["cb"] = [] (auto n) { return n*n*n; };
-    funcTable["sqrt"] = MAKE_FUNC(std::sqrt);
-    funcTable["ln"] = MAKE_FUNC(std::log);
-    funcTable["log"] = MAKE_FUNC(std::log10);
-
-    funcTable["Re"] = MAKE_FUNC(std::real);
-    funcTable["Im"] = MAKE_FUNC(std::imag);
-
-    listFuncTable["sum"] = [] (const ComplexList& list) { return sum(list); };
-    listFuncTable["avg"] = [] (const ComplexList& list) { return avg(list); };
-    listFuncTable["len"] = [](const ComplexList& list) { return len(list); };
-    listFuncTable["sx"] = [](const ComplexList& list) { return standard_deviation(list); };
-    listFuncTable["ux"] = [](const ComplexList& list) { return standard_deviation(list) / std::sqrt(static_cast<double>(len(list))); };
+    add_list_funcs();
 
     using namespace std;
-    funcTable["floor"] = MAKE_PROXY_FUNC(floor);
-    funcTable["ceil"] = MAKE_PROXY_FUNC(ceil);
-    funcTable["round"] = MAKE_PROXY_FUNC(round);
-    funcTable["trunc"] = MAKE_PROXY_FUNC(trunc);
 
-    funcTable["cbrt"] = MAKE_PROXY_FUNC(cbrt);
+    funcTable["abs"] = MAKE_COMPLEX_FUNC(abs);
+    funcTable["norm"] = MAKE_COMPLEX_FUNC(norm);
+    funcTable["arg"] = MAKE_COMPLEX_FUNC(arg);
+    funcTable["exp"] = MAKE_COMPLEX_FUNC(exp);
+
+    funcTable["sqr"] = MAKE_COMPLEX_FUNC(sqr);
+    funcTable["sqrt"] = MAKE_COMPLEX_FUNC(sqrt);
+    funcTable["ln"] = MAKE_COMPLEX_FUNC(log);
+    funcTable["log"] = MAKE_COMPLEX_FUNC(log10);
+
+    funcTable["Re"] = MAKE_COMPLEX_FUNC(real);
+    funcTable["Im"] = MAKE_COMPLEX_FUNC(imag);
+
+    funcTable["floor"] = MAKE_REAL_FUNC(floor);
+    funcTable["ceil"] = MAKE_REAL_FUNC(ceil);
+    funcTable["round"] = MAKE_REAL_FUNC(round);
+    funcTable["trunc"] = MAKE_REAL_FUNC(trunc);
+
+    funcTable["cbrt"] = MAKE_REAL_FUNC(cbrt);
 }
 
-#undef MAKE_FUNC
-#undef MAKE_REAL_FUNC
+SymbolTable::Var make_var(Complex val)
+{
+    return { std::move(val), false };
+}
+
+SymbolTable::Var make_const(Complex val)
+{
+    return { std::move(val), true };
+}

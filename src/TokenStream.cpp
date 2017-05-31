@@ -111,6 +111,8 @@ Token TokenStream::identifier_to_token(const std::string& str) const
         return { Kind::FloorDiv };
     if (str == "mod") 
         return { Kind::Mod };
+    if (str == "fn")
+        return { Kind::FuncDef };
     return { Kind::String, str };
 }
 

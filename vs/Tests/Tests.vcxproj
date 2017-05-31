@@ -118,6 +118,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\include\mps\test\clipboard_test.cpp" />
+    <ClCompile Include="..\..\test\SymbolGuard_Test.cpp" />
     <ClCompile Include="..\..\test\TokenStream_Test.cpp" />
     <ClCompile Include="..\..\test\main.cpp" />
     <ClCompile Include="..\..\test\math_util_Test.cpp" />

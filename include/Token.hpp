@@ -10,6 +10,7 @@ enum class Kind : char {
     Parallel,
     Print,
     FloorDiv,
+    FuncDef,
 
     Plus = '+', 
     Minus = '-',

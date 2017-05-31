@@ -62,27 +62,44 @@ Complex impedance_parallel(Complex R1, Complex R2)
     return R1 * R2 / (R1 + R2);
 }
 
-Complex sqr(Complex num)
-{
-    return num * num;
+Complex pretty_pow(const Complex& base, const Complex& exp)
+{   // I like i^3 to show -i and not -1.83697e-16-i or
+    // (-3)^3 to show -27 and not -27+9.91964e-15i
+    if (!exp.imag() && exp.real() > 1) {
+        Complex res{ 1 };
+        auto e = static_cast<unsigned>(exp.real());
+        if (e == exp.real()) {
+            for (unsigned i = 0; i < e; ++i)
+                res *= base;
+            return res;
+        }
+    }
+    return std::pow(base, exp);
 }
 
-std::size_t len(const ComplexList& list)
+std::size_t len(const List& list)
 {
     return list.size();
 }
 
-Complex sum(const ComplexList& list)
+Complex sum(const List& list)
 {
     return std::accumulate(cbegin(list), cend(list), Complex{});
 }
 
-Complex avg(const ComplexList& list)
+Complex sqr_sum(const List& list)
+{
+    const auto acc_squared = [](auto sum, auto next)
+    { return sum + sqr(next); };
+    return std::accumulate(cbegin(list), cend(list), Complex{}, acc_squared);
+}
+
+Complex avg(const List& list)
 {
     return sum(list) / static_cast<double>(len(list));
 }
 
-Complex standard_deviation(const ComplexList& list)
+Complex standard_deviation(const List& list)
 {
     const auto acc_distance_squared = [a = avg(list)](auto sum, auto next) 
     { return sum + sqr(next - a); };
