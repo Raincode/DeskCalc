@@ -35,8 +35,12 @@ __Complex:__ Re, Im, arg, abs, norm
 __Misc.:__ ln, log, sqr, sqrt, cbrt, round, ceil, floor, trunc
 
 ## Commands
-*__copy__
-*__copy,__
-*__bin__
-*__dec__
-*__hex__
+__copy__
+
+__copy,__
+
+__bin__
+
+__dec__
+
+__hex__
