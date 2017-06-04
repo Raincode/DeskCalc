@@ -3,6 +3,7 @@
 #include <cassert>
 #include <cctype>
 #include <iostream>
+#include <map>
 #include <sstream>
 
 TokenStream::TokenStream(std::istream& is)
@@ -106,16 +107,19 @@ Token TokenStream::parse_identifier(char ch)
     return { Kind::Invalid };
 }
 
+static const std::map<std::string, Kind> strTokens{
+    { "div", Kind::FloorDiv },
+    { "mod", Kind::Mod },
+    { "del", Kind::Delete },
+    { "fn", Kind::FuncDef },
+    { "for", Kind::For }
+};
+
 Token TokenStream::identifier_to_token(const std::string& str) const
 {
-    if (str == "div") 
-        return { Kind::FloorDiv };
-    if (str == "mod") 
-        return { Kind::Mod };
-    if (str == "del")
-        return { Kind::Delete };
-    if (str == "fn")
-        return { Kind::FuncDef };
+    auto found = strTokens.find(str);
+    if (found != cend(strTokens))
+        return { found->second };
     return { Kind::String, str };
 }
 

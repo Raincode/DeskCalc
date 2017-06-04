@@ -12,6 +12,7 @@ enum class Kind : char {
     FloorDiv,
     Delete,
     FuncDef,
+    For,
 
     Plus = '+', 
     Minus = '-',

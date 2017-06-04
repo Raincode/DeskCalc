@@ -231,7 +231,28 @@ Complex Parser::no_result()
 List Parser::list()
 {
     expect(Kind::LBracket);
-    auto l = list_elem();
+    List l;
+    if (consume(Kind::For)) { // [for var=start, end:step loopExpression]
+        auto var = ident();
+        expect(Kind::Assign);
+        auto start = static_cast<int>(prim().real());
+
+        expect(Kind::Comma);
+        auto end = static_cast<int>(prim().real());
+        int step{ 1 };
+        if (consume(Kind::Colon))
+            step = static_cast<int>(prim().real());
+
+        Function f{ "__internal__", table };
+        f.add_var(var);
+        parse_func_term(f);
+        if (start < end && step <= 0 || start > end && step >= 0)
+            error("Infinite loop");
+        for (int i = start; i <= end; i += step)
+            l.emplace_back(f({ Complex(i) }));
+    }
+    else
+        l = list_elem();
     expect(Kind::RBracket);
     return l;
 }
@@ -243,27 +264,8 @@ List Parser::arg_list()
 
     if (peek(Kind::String) && table.has_list(ts.current().str))
         args = table.list(ident());
-    else if (consume(Kind::LBracket)) {
-        // [var=start,end:step loopExpression]
-        auto var = ident();
-        expect(Kind::Assign);
-        auto start = static_cast<int>(prim().real());
-
-        expect(Kind::Comma);
-        auto end = static_cast<int>(prim().real());
-        int step{ 1 };
-        if (consume(Kind::Colon))
-            step = static_cast<int>(prim().real());
-
-        Function f{ "__internal", table };
-        f.add_var(var);
-        parse_func_term(f);
-        if (start < end && step <= 0 || start > end && step >= 0)
-            error("Infinite loop");
-        for (int i = start; i <= end; i += step)
-            args.emplace_back(f({ Complex(i) }));
-        expect(Kind::RBracket);
-    }
+    else if (peek(Kind::LBracket))
+        args = list();
     else
         args = list_elem();
 
