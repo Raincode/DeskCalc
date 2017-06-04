@@ -38,6 +38,14 @@ void Parser::stmt()
         func_def();
     else if (peek(Kind::Delete))
         deletion();
+    else if (consume(Kind::PrintCommand)) {
+        while (!peek(Kind::Print) && !peek(Kind::End)) {
+            std::cout << ts.current() << ' ';
+            ts.get();
+        }
+        std::cout << '\n';
+        hasResult = false;
+    }
     else if (!peek(Kind::Print))
         res = expr();
 
@@ -235,20 +243,20 @@ List Parser::list()
     if (consume(Kind::For)) { // [for var=start, end:step loopExpression]
         auto var = ident();
         expect(Kind::Assign);
-        auto start = static_cast<int>(prim().real());
+        auto start = prim().real();
 
         expect(Kind::Comma);
-        auto end = static_cast<int>(prim().real());
-        int step{ 1 };
+        auto end = prim().real();
+        double step{ 1 };
         if (consume(Kind::Colon))
-            step = static_cast<int>(prim().real());
+            step = prim().real();
 
         Function f{ "__internal__", table };
         f.add_var(var);
         parse_func_term(f);
         if (start < end && step <= 0 || start > end && step >= 0)
             error("Infinite loop");
-        for (int i = start; i <= end; i += step)
+        for (auto i = start; i <= end; i += step)
             l.emplace_back(f({ Complex(i) }));
     }
     else

@@ -38,6 +38,8 @@ TEST_CASE("Parser Test", "[Parser]") {
         REQUIRE_THROWS(parser.parse("42)"));
         REQUIRE_PARSE_RESULT("(((42)))", Complex(42));
 
+        REQUIRE_PARSE_RESULT("2(3+4)", Complex(14));
+
         REQUIRE_NOTHROW(parser.parse("1 + 2*(3 + 4) + 5*pi - pi*e / (1 + 27*2 + 3) - 5"));
         REQUIRE(parser.result().real() - 25.5607 < 10e-3);  // comparing doubles is nasty business
         REQUIRE(parser.result().imag() == 0);
