@@ -41,3 +41,4 @@ __Misc.:__ ln, log, sqr, sqrt, cbrt, round, ceil, floor, trunc
 * __bin__
 * __dec__
 * __hex__
+* __clear/cls__
