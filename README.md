@@ -1,6 +1,8 @@
 # DeskCalc
 Desk(top) Calculator inspired by "The C++ Programming Language" (Stroustrup)
 
+## Quick Start Guide
+
 ## Features
 Variables
 Functions (multiple parameters possible)
@@ -22,5 +24,3 @@ __Complex:__ Re, Im, arg, abs, norm
 __Misc.:__ ln, log, sqr, sqrt, cbrt, round, ceil, floor, trunc
 
 ## Commands
-
-## Quick Start Guide
