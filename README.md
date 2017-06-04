@@ -2,6 +2,16 @@
 Desk(top) Calculator inspired by "The C++ Programming Language" (Stroustrup)
 
 ## Quick Start Guide
+```
+// calculate arbitrary expressions
+>> 1 + 2*(3 + 4) + 5*pi - pi*e / (1 + 27*2 + 3) - sin(45deg)
+
+// define and use variables
+>> var = 42
+42
+>> 2*var + 2var
+168
+```
 
 ## Features
 Variables
