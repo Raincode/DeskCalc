@@ -28,6 +28,7 @@ Complex sum(const List& list);
 Complex sqr_sum(const List& list);
 Complex avg(const List& list);
 Complex standard_deviation(const List& list);
+Complex standard_uncertainty(const List& list);
 
 constexpr double pi{ 3.1415926535897932385 };
 

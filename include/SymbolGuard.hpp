@@ -16,6 +16,6 @@ public:
 
 private:
     SymbolTable& table;
-    std::unordered_map<std::string, SymbolTable::Var> varCache;
+    std::unordered_map<std::string, Complex> varCache;
     std::vector<std::string> shadowedVars;
 };

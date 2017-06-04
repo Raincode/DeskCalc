@@ -29,6 +29,9 @@ private:
     void func_def();
     void parse_param_list(Function& func);
     void parse_func_term(Function& func);
+    void deletion();
+    void del_symbol();
+    void list_def(const std::string& name);
 
     Complex expr();
     Complex term();
@@ -36,14 +39,14 @@ private:
     Complex postfix();
     Complex prim();
     Complex resolve_str_tok();
-    Complex func_call();
-    Complex var_def();
-
+    Complex var_def(const std::string& name);
     Complex no_result();
 
-    List list_elems();
     List list();
     List arg_list();
+    List list_elem();
+
+    const std::string& ident();
 
     bool peek(Kind kind) const;
     bool consume(Kind kind);

@@ -22,5 +22,6 @@ private:
 
     SymbolTable symbolTable;
     Parser parser;
+    std::string prompt{ "> " };
     std::map<std::string, std::function<void()>> commands;
 };

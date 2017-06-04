@@ -109,3 +109,8 @@ Complex standard_deviation(const List& list)
 
     return std::sqrt(s_sqr);
 }
+
+Complex standard_uncertainty(const List& list)
+{
+    return standard_deviation(list) / std::sqrt(len(list));
+}

@@ -10,6 +10,7 @@ enum class Kind : char {
     Parallel,
     Print,
     FloorDiv,
+    Delete,
     FuncDef,
 
     Plus = '+', 
@@ -21,6 +22,7 @@ enum class Kind : char {
     Fac = '!',
     Assign = '=',
     Comma = ',',
+    Colon = ':',
 
     LParen = '(',
     RParen = ')',

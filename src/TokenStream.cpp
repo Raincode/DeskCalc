@@ -56,6 +56,7 @@ Token TokenStream::get()
     case '^':
     case ',':
     case '=':
+    case ':':
     case '(': case ')':
     case '[': case ']':
     case '{': case '}':
@@ -111,6 +112,8 @@ Token TokenStream::identifier_to_token(const std::string& str) const
         return { Kind::FloorDiv };
     if (str == "mod") 
         return { Kind::Mod };
+    if (str == "del")
+        return { Kind::Delete };
     if (str == "fn")
         return { Kind::FuncDef };
     return { Kind::String, str };

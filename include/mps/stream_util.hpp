@@ -91,6 +91,26 @@ std::string get_str(const std::string& prompt)  // in future maybe add format?
     return ret;
 }
 
+void recover_line(std::istream& is)
+{
+    is.clear();
+    is.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+}
+
+bool ask_user(const std::string& question)
+{
+    std::cout << question << " (Y/n)? ";
+    char c{};
+    do {
+        if (!(std::cin >> c))
+            return false;
+        if (c == 'y')
+            std::cout << "Please enter 'Y' instead of 'y': ";
+    } while (c == 'y');
+    std::cin.ignore();  // discard remaining '\n'
+    return c == 'Y';
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 
 static inline void keep_window_open()
