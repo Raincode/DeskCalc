@@ -92,7 +92,7 @@ void Calculator::show_intro() const
         cout << intro;
 
     static Warning w{ "Copyright (C) 2017 Matthias Stauber\n"
-                      "This program comes with ABSOLUTELY NO WARRANTY\nAdd hex() and dec()\n" };
+                      "This program comes with ABSOLUTELY NO WARRANTY\n" };
 }
 
 bool Calculator::handle_cmd(const std::string& cmd)
