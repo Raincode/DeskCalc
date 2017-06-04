@@ -2,11 +2,19 @@
 Desk(top) Calculator inspired by "The C++ Programming Language" (Stroustrup)
 
 ## Features
-
+Complex Number arithmetic
 ## Built-in Constants
-pi, e, i
+pi, e, i, deg (will convert to rad, so you can write sin(90deg))
 
 ## Built-in Functions
-acos, acosh, asin, asinh, atan, atanh, cos, cosh, sin, sinh, tan, tanh
-
+### Trigonometric
+sin, cos, tan, asin, acos, atan, sinh, cosh, tanh, asinh, acosh, atanh
+### Temperature Conversion
+CtoF, CtoK, FtoC, FtoK, KtoC, KtoF
+### Lists
+avg, len, sum, sum2 (squared sum), sx (standard deviation), ux (standard uncertainty)
+### Complex
+Re, Im, arg, abs, norm
+### Misc.
+ln, log, norm, arg, sqr, sqrt, cbrt, round, ceil, floor, trunc
 ## Commands
