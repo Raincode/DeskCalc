@@ -18,6 +18,7 @@ Desk(top) Calculator inspired by "The C++ Programming Language" (Stroustrup)
 * Variables
 * Functions (multiple parameters possible)
 * Complex Number arithmetic
+* Minimal list support
 
 ## Built-in Constants
 pi, e, i, deg (will convert to rad, so you can write sin(90deg))
