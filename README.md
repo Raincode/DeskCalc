@@ -18,6 +18,8 @@ Desk(top) Calculator inspired by "The C++ Programming Language" (Stroustrup)
 6+15i 
 >> 5*e^(90deg)i + 3*e^(45deg)i - 1*e^(135deg)i
 2.82843+6.41421i
+>> exp
+7.01015*e^(66.2043deg)i
 
 // define functions with multiple variables
 >> fn f(a,b,c) = a*b + c
@@ -87,3 +89,4 @@ __Misc.:__ ln, log, sqr, sqrt, cbrt, round, ceil, floor, trunc
 * __clear (all | vars | funcs | lists):__ Removes all user-defined variables/functions/lists
 * __run:__ Run a DeskCalc file while running the CLI
 * __ls:__ List variables, user-defined functions and lists
+* __exp:__ Output last result in expontential Form r*e^(tetha in °)i
