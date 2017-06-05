@@ -30,6 +30,9 @@ Desk(top) Calculator inspired by "The C++ Programming Language" (Stroustrup)
 >> x = [1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5]
 >> x
 [1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5]
+>> x = [for i=1, 5:0.5 i]
+>> x
+[1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5]
 >> len(x); avg(x); sum(x)
 9
 3
