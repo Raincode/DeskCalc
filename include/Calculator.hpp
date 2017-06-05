@@ -5,6 +5,7 @@
 #include <string>
 
 #include "Parser.hpp"
+#include "SymbolTable.hpp"
 
 class Calculator {
 public: 
@@ -18,10 +19,10 @@ private:
 
     bool run_file(const std::string& path);
     void run_cli();
-    void exec(const std::string& input);
 
     SymbolTable symbolTable;
     Parser parser;
     std::string prompt{ "> " };
+    std::string intro;
     std::map<std::string, std::function<void()>> commands;
 };

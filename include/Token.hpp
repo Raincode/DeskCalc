@@ -9,7 +9,6 @@ enum class Kind : char {
     String,
     Parallel,
     Print,
-    PrintCommand,
     FloorDiv,
     Delete,
     FuncDef,

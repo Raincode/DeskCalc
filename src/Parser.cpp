@@ -5,12 +5,16 @@
 
 #include "mps/stream_util.hpp"
 
-#include "Function.hpp"
 #include "math_util.hpp"
 #include "SymbolTable.hpp"
 
 Parser::Parser(SymbolTable& table)
     : table{ table }  { }
+
+void Parser::set_symbol_table(SymbolTable& t)
+{
+    table = t;
+}
 
 void Parser::parse(std::istream& is)
 {
@@ -38,16 +42,11 @@ void Parser::stmt()
         func_def();
     else if (peek(Kind::Delete))
         deletion();
-    else if (consume(Kind::PrintCommand)) {
-        while (!peek(Kind::Print) && !peek(Kind::End)) {
-            std::cout << ts.current() << ' ';
-            ts.get();
-        }
-        std::cout << '\n';
-        hasResult = false;
-    }
     else if (!peek(Kind::Print))
         res = expr();
+
+    if (hasResult && onRes)
+        onRes(res);
 
     if (!peek(Kind::End))
         expect(Kind::Print);
@@ -65,7 +64,7 @@ void Parser::func_def()
     List test_args(func.numArgs(), 1);
     func(test_args);
 
-    table.add_func(func.name(), func);
+    table.set_func(func.name(), func);
     hasResult = false;
 }
 
@@ -168,7 +167,7 @@ Complex Parser::postfix()
         if (consume(Kind::Pow))
             return pretty_pow(left, sign());
         else if (peek(Kind::String))
-            return left * resolve_str_tok();
+            return left * postfix();
         else if (peek(Kind::LParen))
             return left * prim();
         else if (consume(Kind::Fac))
@@ -227,7 +226,7 @@ Complex Parser::var_def(const std::string& name)
         error(name, " is already defined");
     auto val = expr();
     table.set_var(name, val);
-    return val;
+    return varDefIsRes ? val : no_result();
 }
 
 Complex Parser::no_result()

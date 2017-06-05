@@ -21,6 +21,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #include <algorithm>
+#include <cctype>
 #include <iostream>
 #include <limits>
 #include <string>
@@ -109,6 +110,54 @@ bool ask_user(const std::string& question)
     } while (c == 'y');
     std::cin.ignore();  // discard remaining '\n'
     return c == 'Y';
+}
+
+void print_binary(std::ostream& os, int n)
+{
+    if (n <= 1) {
+        os << n;
+        return;
+    }
+    print_binary(os, n >> 1);
+    os << n % 2;
+}
+
+bool read_hex(std::istream& is, int& out)
+{
+    char c1, c2;
+    if (!is.get(c1))
+        return false;
+
+    if (!is.get(c2)) {
+        is.putback(c1);
+        return false;
+    }
+
+    if (c1 == '0' && c2 == 'x')
+        return (is >> std::hex >> out >> std::dec).good();
+
+    is.putback(c2);
+    is.putback(c1);
+    return false;
+}
+
+bool read_bin(std::istream& is, int& out)
+{
+    char c;
+    if (!is.get(c))
+        return false;
+
+    if (c == '0') {
+        for (out = 0; is.get(c) && c == '0' || c == '1'; ) {
+            out <<= 1;
+            if (c == '1')
+                ++out;
+        }
+        return true;
+    }
+
+    is.putback(c);
+    return false;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -32,7 +32,9 @@ using namespace mps::stl;
     return Complex{ (f)(list.front().real()) }; }
 
 SymbolTable::SymbolTable()
-    : funcTable{ defaultFuncTable }{ }
+{
+    add_constants();
+}
 
 bool SymbolTable::is_reserved_func(const std::string& name) const
 {
@@ -48,9 +50,10 @@ void SymbolTable::set_list(ConstStrRef name, List&& list)
     listTable[name] = list;
 }
 
-void SymbolTable::add_func(ConstStrRef name, Func func)
+void SymbolTable::set_func(ConstStrRef name, Function func)
 {
-    insert_unique(funcTable, name, func);
+    funcTable.erase(name);
+    funcTable.emplace(name, std::move(func));
 }
 
 Complex SymbolTable::value_of(ConstStrRef var) const
@@ -65,7 +68,10 @@ const List& SymbolTable::list(ConstStrRef name) const
 
 Complex SymbolTable::call_func(ConstStrRef func, const List& arg) const
 {
-    return find_or_throw(funcTable, func, "Function " + func + " is undefined")->second(arg);
+    auto f = funcTable.find(func);
+    if (f != end(funcTable))
+        return f->second(arg);
+    return find_or_throw(defaultFuncTable, func, "Function " + func + " is undefined")->second(arg);
 }
 
 bool SymbolTable::has_var(ConstStrRef name) const
@@ -115,14 +121,38 @@ void SymbolTable::remove_symbol(ConstStrRef name)
         remove_var(name);
 }
 
+void SymbolTable::clear()
+{
+    clear_vars();
+    clear_funcs();
+    clear_lists();
+}
+
+void SymbolTable::clear_vars()
+{
+    varTable.clear();
+    add_constants();
+}
+
+void SymbolTable::clear_funcs()
+{
+    funcTable.clear();
+}
+
+void SymbolTable::clear_lists()
+{
+    listTable.clear();
+}
+
 void SymbolTable::add_constants()
 {
     varTable["i"] = { 0, 1 };
     varTable["pi"] = pi;
     varTable["e"] = 2.7182818284590452354;
+    varTable["deg"] = pi / 180;
 }
 
-const std::map<std::string, Func> SymbolTable::defaultFuncTable{
+const SymbolTable::FuncMap SymbolTable::defaultFuncTable{
     { "sin", MAKE_COMPLEX_FUNC(sin) },
     { "cos", MAKE_COMPLEX_FUNC(cos) },
     { "tan", MAKE_COMPLEX_FUNC(tan) },

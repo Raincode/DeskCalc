@@ -1,12 +1,14 @@
 #include "math_util.hpp"
 
+#include <cmath>
+#include <numeric>
 #include <stdexcept>
 
 using std::runtime_error;
 
-constexpr bool is_zero(const Complex& num)
+Complex sqr(Complex num)
 {
-    return !num.real() && !num.imag();
+    return num * num;
 }
 
 Complex safe_div(Complex left, Complex right)

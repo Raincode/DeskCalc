@@ -1,8 +1,13 @@
 #include "Function.hpp"
 
+#include <ostream>
+
+#include "mps/str_util.hpp"
+
 #include "Parser.hpp"
 #include "SymbolGuard.hpp"
 #include "SymbolTable.hpp"
+#include "types.hpp"
 
 Function::Function(const std::string& name, SymbolTable& table)
     : funcName{ name }, table{ table }
@@ -20,4 +25,15 @@ Complex Function::operator()(const List& args) const
         guard.shadow_var(vars[i], args[i]);
     parser.parse(term);
     return parser.result();
+}
+
+std::ostream& operator<<(std::ostream& os, const Function& func)
+{
+    os << func.funcName << '(';
+    std::string sep;
+    for (const auto& v : func.vars) {
+        os << sep << v;
+        sep = ",";
+    }
+    return os << ") = " << func.term;
 }

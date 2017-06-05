@@ -6,9 +6,10 @@
 
 #include "ErrorReporter.hpp"
 #include "Function.hpp"
-#include "SymbolTable.hpp"
 #include "TokenStream.hpp"
 #include "types.hpp"
+
+class SymbolTable;
 
 class Parser {
 public:
@@ -21,7 +22,10 @@ public:
     bool has_result() const { return hasResult; }
 
     SymbolTable& symbol_table() { return table; }
-    void set_symbol_table(SymbolTable& t) { table = t; }
+    void set_symbol_table(SymbolTable& t);
+
+    void set_vardef_is_res(bool isRes) { varDefIsRes = isRes; }
+    void on_result(std::function<void(Complex)> handler) { onRes = std::move(handler); }
 
 private:
     void parse();
@@ -59,6 +63,8 @@ private:
 
     Complex res;
     bool hasResult{};
+    bool varDefIsRes{ true };
+    std::function<void(Complex)> onRes;
 };
 
 

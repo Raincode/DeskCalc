@@ -112,8 +112,7 @@ static const std::map<std::string, Kind> strTokens{
     { "mod", Kind::Mod },
     { "del", Kind::Delete },
     { "fn", Kind::FuncDef },
-    { "for", Kind::For },
-    { "print", Kind::PrintCommand }
+    { "for", Kind::For }
 };
 
 Token TokenStream::identifier_to_token(const std::string& str) const

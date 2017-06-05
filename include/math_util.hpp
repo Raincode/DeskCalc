@@ -1,11 +1,11 @@
 #pragma once
 
-#include <cmath>
-#include <numeric>
-
 #include "types.hpp"
 
-constexpr bool is_zero(const Complex& num);
+constexpr bool is_zero(const Complex& num)
+{
+    return !num.real() && !num.imag();
+}
 
 Complex safe_div(Complex left, Complex right);
 Complex safe_floordiv(Complex left, Complex right);
@@ -30,23 +30,7 @@ Complex avg(const List& list);
 Complex standard_deviation(const List& list);
 Complex standard_uncertainty(const List& list);
 
-constexpr double pi{ 3.1415926535897932385 };
-
-inline Complex sqr(Complex num)
-{
-    return num * num;
-}
-
-constexpr double deg(double rad)
-{
-    return 180 / pi * rad;
-}
-
-constexpr double rad(double deg)
-{
-    return pi / 180 * deg;
-}
-
+Complex sqr(Complex num);
 Complex pretty_pow(const Complex& base, const Complex& exp);
 
 namespace temp {
@@ -58,4 +42,16 @@ namespace temp {
     constexpr double FtoC(double fahrenheit) { return (fahrenheit - 32) / 1.8; }
     constexpr double FtoK(double fahrenheit) { return CtoK(FtoC(fahrenheit)); }
     constexpr double KtoF(double kelvin) { return CtoF(KtoC(kelvin)); }
+}
+
+constexpr double pi{ 3.1415926535897932385 };
+
+constexpr double deg(double rad)
+{
+    return 180 / pi * rad;
+}
+
+constexpr double rad(double deg)
+{
+    return pi / 180 * deg;
 }

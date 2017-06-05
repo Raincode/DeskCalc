@@ -1,10 +1,7 @@
 #pragma once
 
-#include <cassert>
 #include <string>
 #include <vector>
-
-#include "mps/str_util.hpp"
 
 #include "types.hpp"
 
@@ -21,6 +18,8 @@ public:
 
     std::size_t numArgs() const { return vars.size(); }
     const std::string& name() const { return funcName; }
+
+    friend std::ostream& operator<<(std::ostream& os, const Function& func);
 
 private:
     SymbolTable& table;

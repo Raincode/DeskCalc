@@ -5,20 +5,21 @@
 
 #include "mps/stl_util.hpp"
 
+#include "Function.hpp"
 #include "types.hpp"
 
 class SymbolTable {
 public:
     using ConstStrRef = const std::string&;
+    using FuncMap = std::map<std::string, Func>;
 
     SymbolTable();
 
-    void add_constants();
     bool is_reserved_func(const std::string& name) const;
 
     void set_var(ConstStrRef name, Complex value);
     void set_list(ConstStrRef name, List&& list);
-    void add_func(ConstStrRef name, Func func);
+    void set_func(ConstStrRef name, Function func);
 
     Complex value_of(ConstStrRef var) const;
     const List& list(ConstStrRef var) const;
@@ -34,10 +35,21 @@ public:
     void remove_func(ConstStrRef name);
     void remove_symbol(ConstStrRef name);
 
+    void clear();
+    void clear_vars();
+    void clear_funcs();
+    void clear_lists();
+
+    const std::map<std::string, Complex>& vars() const { return varTable; }
+    const std::map<std::string, List>& lists() const { return listTable; }
+    const std::map<std::string, Function>& funcs() const { return funcTable; }
+
 private:
-    static const std::map<std::string, Func> defaultFuncTable;
+    void add_constants();
+
+    static const FuncMap defaultFuncTable;
 
     std::map<std::string, Complex> varTable;
     std::map<std::string, List> listTable;
-    std::map<std::string, Func> funcTable;
+    std::map<std::string, Function> funcTable;
 };

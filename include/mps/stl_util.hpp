@@ -98,7 +98,7 @@ inline void for_each(C& c, Func f)
 }
 
 template<class K, class V>
-inline void insert_unique(std::map<K,V>& map, const K& key, const V& val)
+inline void insert_unique(std::map<K,V>& map, K&& key, V&& val)
 {
 	auto found = map.find(key);
 	if (found != cend(map))
