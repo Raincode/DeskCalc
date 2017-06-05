@@ -40,25 +40,6 @@ Desk(top) Calculator inspired by "The C++ Programming Language" (Stroustrup)
 >> sx(x); ux(x)
 1.36931
 0,456435
-
-// view defined symbols
->> ls
-Variables:
-~~~~~~~~~~
-  _ = 0.456435
-  ans = 0.456435
-  deg = 0.0174533
-  e = 2.71828
-  i = i
-  pi = 3.14159
-
-Functions:
-~~~~~~~~~~
-  f(a,b,c) = a*b+c
-
-Lists:
-~~~~~~
-  x = [1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5]
 ```
 
 ## Features
