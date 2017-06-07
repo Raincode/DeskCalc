@@ -13,7 +13,6 @@ public:
     void run(int argc, char* argv[]);
 
 private:
-    void show_intro() const;
     bool handle_cmd(const std::string& cmd);
     void register_commands();
 

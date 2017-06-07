@@ -7,36 +7,34 @@
 
 using Complex = std::complex<double>;
 using List = std::vector<Complex>;
-using Func = std::function<Complex(const List&)>;
+using Func = Complex(*)(const List&); // using Func = std::function<Complex(const List&)>;
 
 template<class T>
 void print_complex(std::ostream& os, const std::complex<T>& n)
-{
-    using std::cout;
-
+{   // The standard already defines a different operator<< for std::complex
     if (n.imag()) {
         if (n.real()) {
-            cout << n.real();
+            os << n.real();
             if (n.imag() > 0)
-                cout << '+';
+                os << '+';
         }
         if (std::abs(n.imag()) != 1)
-            cout << n.imag();
-        cout << (n.imag() == -1 ? "-" : "") << 'i';
+            os << n.imag();
+        os << (n.imag() == -1 ? "-" : "") << 'i';
     }
     else
-        cout << n.real();
+        os << n.real();
 }
 
 template<class T>
 void print_list(std::ostream& os, const std::vector<T>& v)
 {
-    std::cout << '[';
+    os << '[';
     std::string sep;
     for (const auto& item : v) {
-        std::cout << sep;
-        print_complex(std::cout, item);
+        os << sep;
+        print_complex(os, item);
         sep = ", ";
     }
-    std::cout << ']';
+    os << ']';
 }

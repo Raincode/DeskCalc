@@ -12,6 +12,8 @@ public:
     explicit TokenStream(std::istream* input);
     explicit TokenStream(const std::string& input);
 
+    ~TokenStream();
+
     TokenStream(const TokenStream&) = delete;
     TokenStream& operator=(const TokenStream&) = delete;
 

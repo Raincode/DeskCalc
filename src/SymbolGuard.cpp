@@ -17,7 +17,7 @@ SymbolGuard::~SymbolGuard()
 void SymbolGuard::shadow_var(const std::string& name, Complex tempVal)
 {
     if (table.has_var(name)) {
-        auto val = table.value_of(name);
+        const auto val = table.value_of(name);
         varCache[name] = val;
         table.remove_var(name);
     }

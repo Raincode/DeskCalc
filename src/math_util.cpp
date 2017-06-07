@@ -6,19 +6,19 @@
 
 using std::runtime_error;
 
-Complex sqr(Complex num)
+Complex sqr(const Complex& num)
 {
     return num * num;
 }
 
-Complex safe_div(Complex left, Complex right)
+Complex safe_div(const Complex& left, const Complex& right)
 {
     if (is_zero(right))
         throw runtime_error{ "Divide by zero" };
     return left / right;
 }
 
-Complex safe_floordiv(Complex left, Complex right)
+Complex safe_floordiv(Complex left, const Complex& right)
 {
     if (is_zero(right))
         throw runtime_error{ "Divide by zero" };
@@ -26,7 +26,7 @@ Complex safe_floordiv(Complex left, Complex right)
     return { std::floor(left.real()), std::floor(left.imag()) };
 }
 
-Complex safe_mod(Complex left, Complex right)
+Complex safe_mod(const Complex& left, const Complex& right)
 {
     if (left.imag() || right.imag()) 
         throw runtime_error{ "Modulo not defined for complex numbers (yet)" };
@@ -49,7 +49,7 @@ double factorial(int n)
     return ret;
 }
 
-Complex factorial(Complex num)
+Complex factorial(const Complex& num)
 {
     auto trunc = std::trunc(num.real());
     if (num.imag() || trunc < 0 || trunc != num.real())
@@ -57,7 +57,7 @@ Complex factorial(Complex num)
     return factorial(static_cast<int>(trunc));
 }
 
-Complex impedance_parallel(Complex R1, Complex R2)
+Complex impedance_parallel(const Complex& R1, const Complex& R2)
 {
     if (is_zero(R1) && is_zero(R2))
         throw runtime_error{ "Resistors must be greater than 0" };
@@ -79,7 +79,7 @@ Complex pretty_pow(const Complex& base, const Complex& exp)
     return std::pow(base, exp);
 }
 
-std::size_t len(const List& list)
+std::size_t len(const List& list) noexcept
 {
     return list.size();
 }

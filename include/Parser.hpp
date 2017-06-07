@@ -18,7 +18,7 @@ public:
     void parse(std::istream& is);
     void parse(const std::string& input);
 
-    Complex result() const { return res; }
+    const Complex& result() const { return res; }
     bool has_result() const { return hasResult; }
 
     SymbolTable& symbol_table() { return table; }

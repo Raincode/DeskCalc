@@ -15,6 +15,11 @@ TokenStream::TokenStream(std::istream* is)
 TokenStream::TokenStream(const std::string& str)
     : input{ new std::istringstream{str} }, ownsInput{ true } { }
 
+TokenStream::~TokenStream()
+{
+    cleanup();
+}
+
 void TokenStream::set_input(std::istream& is)
 {
     cleanup();
@@ -117,7 +122,7 @@ static const std::map<std::string, Kind> strTokens{
 
 Token TokenStream::identifier_to_token(const std::string& str) const
 {
-    auto found = strTokens.find(str);
+    const auto found = strTokens.find(str);
     if (found != cend(strTokens))
         return { found->second };
     return { Kind::String, str };

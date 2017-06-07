@@ -9,8 +9,8 @@
 #include "SymbolTable.hpp"
 #include "types.hpp"
 
-Function::Function(const std::string& name, SymbolTable& table)
-    : funcName{ name }, table{ table }
+Function::Function(std::string name, SymbolTable& table)
+    : funcName{ std::move(name) }, table{ table }
 {
 }
 
@@ -30,7 +30,7 @@ Complex Function::operator()(const List& args) const
 std::ostream& operator<<(std::ostream& os, const Function& func)
 {
     os << func.funcName << '(';
-    std::string sep;
+    std::string sep;  // string instead of char, because it needs to be empty during first iteration
     for (const auto& v : func.vars) {
         os << sep << v;
         sep = ",";

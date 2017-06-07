@@ -9,27 +9,6 @@
 
 #include "math_util.hpp"
 
-using namespace std;
-using namespace temp;
-using namespace mps::stl;
-
-#define CHECK_SINGLE_ARG(f) \
-    if (list.size() != 1) throw std::runtime_error{ #f " expects exactly 1 argument" };
-
-#define MAKE_COMPLEX_FUNC(f) [] (const List& list) { \
-    CHECK_SINGLE_ARG(f) \
-    return (f)(list.front()); }
-
-#define MAKE_PROXY_FUNC(f) [] (const Complex& c) { \
-        if (c.imag()) \
-            throw std::runtime_error{ #f " not defined for complex numbers" }; \
-        return Complex{ (f)(c.real()) }; }
-
-#define MAKE_REAL_FUNC(f) [] (const List& list) { \
-    CHECK_SINGLE_ARG(f) \
-    if (list.front().imag()) \
-        throw std::runtime_error{ #f " not defined for complex numbers" }; \
-    return Complex{ (f)(list.front().real()) }; }
 
 SymbolTable::SymbolTable()
 {
@@ -38,11 +17,17 @@ SymbolTable::SymbolTable()
 
 bool SymbolTable::is_reserved_func(const std::string& name) const
 {
-    return contains(defaultFuncTable, name);
+    return mps::stl::contains(defaultFuncTable, name);
 }
+
+void SymbolTable::set_const(ConstStrRef name, Complex val)
+{
+    varTable[name] = make_const_var(std::move(val));
+}
+
 void SymbolTable::set_var(ConstStrRef name, Complex val)
 {
-    varTable[name] = val;
+    varTable[name] = make_var(std::move(val));
 }
 
 void SymbolTable::set_list(ConstStrRef name, List&& list)
@@ -58,35 +43,41 @@ void SymbolTable::set_func(ConstStrRef name, Function func)
 
 Complex SymbolTable::value_of(ConstStrRef var) const
 {
-    return find_or_throw(varTable, var, "Variable " + var + " is undefined")->second;
+    return mps::stl::find_or_throw(varTable, var, "Variable " + var + " is undefined")->second.value;
 }
 
 const List& SymbolTable::list(ConstStrRef name) const
 {
-    return find_or_throw(listTable, name, "List " + name + " is undefined")->second;
+    return mps::stl::find_or_throw(listTable, name, "List " + name + " is undefined")->second;
 }
 
 Complex SymbolTable::call_func(ConstStrRef func, const List& arg) const
 {
-    auto f = funcTable.find(func);
-    if (f != end(funcTable))
+    const auto f = funcTable.find(func);
+    if (f != cend(funcTable))
         return f->second(arg);
-    return find_or_throw(defaultFuncTable, func, "Function " + func + " is undefined")->second(arg);
+    return mps::stl::find_or_throw(defaultFuncTable, func, "Function " + func + " is undefined")->second(arg);
+}
+
+bool SymbolTable::is_const(ConstStrRef name) const
+{
+    const auto found = varTable.find(name);
+    return found != cend(varTable) && found->second.access == VarAccess::Const;
 }
 
 bool SymbolTable::has_var(ConstStrRef name) const
 {
-    return contains(varTable, name);
+    return mps::stl::contains(varTable, name);
 }
 
 bool SymbolTable::has_list(ConstStrRef name) const
 {
-    return contains(listTable, name);
+    return mps::stl::contains(listTable, name);
 }
 
 bool SymbolTable::has_func(ConstStrRef name) const
 {
-    return contains(funcTable, name);
+    return mps::stl::contains(funcTable, name);
 }
 
 bool SymbolTable::isset(ConstStrRef name) const
@@ -112,7 +103,7 @@ void SymbolTable::remove_func(ConstStrRef name)
 void SymbolTable::remove_symbol(ConstStrRef name)
 {
     if (!isset(name))
-        throw runtime_error{ name + " is undefined" };
+        throw std::runtime_error{ name + " is undefined" };
     if (has_func(name))
         remove_func(name);
     if (has_list(name))
@@ -146,12 +137,32 @@ void SymbolTable::clear_lists()
 
 void SymbolTable::add_constants()
 {
-    varTable["i"] = { 0, 1 };
-    varTable["pi"] = pi;
-    varTable["e"] = 2.7182818284590452354;
-    varTable["deg"] = pi / 180;
+    varTable["i"] = make_const_var({0, 1});
+    varTable["pi"] = make_const_var(pi);
+    varTable["e"] = make_const_var(2.7182818284590452354);
+    varTable["deg"] = make_const_var(pi / 180);
 }
 
+#define CHECK_SINGLE_ARG(f) \
+    if (list.size() != 1) throw std::runtime_error{ #f " expects exactly 1 argument" };
+
+#define MAKE_COMPLEX_FUNC(f) [] (const List& list) { \
+    CHECK_SINGLE_ARG(f) \
+    return Complex{ (f)(list.front()) }; }
+
+#define MAKE_PROXY_FUNC(f) [] (const Complex& c) { \
+        if (c.imag()) \
+            throw std::runtime_error{ #f " not defined for complex numbers" }; \
+        return Complex{ (f)(c.real()) }; }
+
+#define MAKE_REAL_FUNC(f) [] (const List& list) { \
+    CHECK_SINGLE_ARG(f) \
+    if (list.front().imag()) \
+        throw std::runtime_error{ #f " not defined for complex numbers" }; \
+    return Complex{ (f)(list.front().real()) }; }
+
+using namespace std;
+using namespace temp;
 const SymbolTable::FuncMap SymbolTable::defaultFuncTable{
     { "sin", MAKE_COMPLEX_FUNC(sin) },
     { "cos", MAKE_COMPLEX_FUNC(cos) },
@@ -198,7 +209,17 @@ const SymbolTable::FuncMap SymbolTable::defaultFuncTable{
     { "sum", sum },
     { "sum2", sqr_sum },
     { "avg", avg },
-    { "len", len },
+    { "len", [](const List& l) { return Complex{static_cast<double>(len(l))}; } },
     { "sx", standard_deviation },
     { "ux", standard_uncertainty }
 };
+
+Var make_const_var(Complex value)
+{
+    return { std::move(value), VarAccess::Const };
+}
+
+Var make_var(Complex value)
+{
+    return { std::move(value), VarAccess::Mutable };
+}

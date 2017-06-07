@@ -10,25 +10,25 @@
 
 #include "math_util.hpp"
 #include "types.hpp"
-#include "Warning.hpp"
 
-using namespace std;
+using std::cin;
+using std::cout;
 
 Calculator::Calculator()
     : parser{ symbolTable }
 {
     register_commands();
 
-    ifstream ifs{ "prompt.txt" };  // ommitted error handling, since there is a default prompt in place
-    getline(ifs, prompt);
+    if (std::ifstream prompt_stream{ "prompt.txt" })  // ommitted error handling, since there is a default prompt in place
+        getline(prompt_stream, prompt);
 
-    if (ifstream ifs{ "intro.txt" }) {
+    if (std::ifstream intro_stream{ "intro.txt" }) {
         std::ostringstream s;
-        s << ifs.rdbuf();
+        s << intro_stream.rdbuf();
         intro = s.str();
     }
 
-    parser.on_result([this](auto&& n) {
+    parser.on_result([this](const auto& n) {
         parser.symbol_table().set_var("_", n);
         parser.symbol_table().set_var("ans", n);
         print_complex(cout, n);
@@ -43,48 +43,43 @@ void Calculator::run(int argc, char* argv[])
         run_cli();
         break;
     case 2:
-        if (string(argv[1]) == "-")
+        if (std::string(argv[1]) == "-")
             run_cli();
         else if (!run_file(argv[1]))
             parser.parse(argv[1]);
         break;
     default:
-        throw runtime_error{ "Invalid number of arguments" };
+        throw std::runtime_error{ "Invalid number of arguments" };
     }
 }
 
-bool Calculator::run_file(const string& path)
+bool Calculator::run_file(const std::string& path)
 {
-    ifstream ifs{ path };
-    if (!ifs)
-        return false;
-    parser.parse(ifs);
-    return true;
+    if (std::ifstream ifs{ path }) {
+        parser.parse(ifs);
+        return true;
+    }
+    return false;
 }
 
 void Calculator::run_cli()
 {
-    show_intro();
-    cout << prompt;
+    cout << intro 
+         << "Copyright (C) 2017 Matthias Stauber\n"
+            "This program comes with ABSOLUTELY NO WARRANTY\n"
+         << prompt;
 
-    for (string s; getline(cin, s); ) {
+    for (std::string s; std::getline(cin, s); ) {
         s = mps::str::trim(s);
         try {
             if (s.size() && !handle_cmd(s))
                 parser.parse(s);
         }
-        catch (runtime_error& e) {
-            cerr << e.what() << '\n';
+        catch (const std::runtime_error& e) {
+            std::cerr << e.what() << '\n';
         }
         cout << prompt;
     }
-}
-
-void Calculator::show_intro() const
-{
-    cout << intro;
-    static Warning w{ "Copyright (C) 2017 Matthias Stauber\n"
-                      "This program comes with ABSOLUTELY NO WARRANTY\n" };
 }
 
 bool Calculator::handle_cmd(const std::string& cmd)
@@ -99,7 +94,7 @@ bool Calculator::handle_cmd(const std::string& cmd)
 
 void Calculator::register_commands()
 {
-    static const string helpText{
+    static const std::string helpText{
         "For a list of operators, commands and functions please view the readme file\n"
     };
 
@@ -107,13 +102,13 @@ void Calculator::register_commands()
 
     commands["clear"] = commands["cls"] = [this] {
         mps::cls();
-        show_intro();
+        cout << intro;
     };
 
     commands["clear all"] = [this] {
         parser.symbol_table().clear();
         mps::cls(); 
-        show_intro();
+        cout << intro;
     };
     commands["clear vars"] = [this] { parser.symbol_table().clear_vars(); };
     commands["clear funcs"] = [this] { parser.symbol_table().clear_funcs(); };
@@ -123,22 +118,22 @@ void Calculator::register_commands()
     commands["show vars"] = [this] { parser.set_vardef_is_res(true); };
 
     commands["ls"] = [this] {
-        auto&& vars = parser.symbol_table().vars();
+        const auto& vars = parser.symbol_table().vars();
         if (vars.size())
             cout << "Variables:\n~~~~~~~~~~\n";
         for (const auto& v : vars) {
             cout << "  " << v.first << " = ";
-            print_complex(cout, v.second);
+            print_complex(cout, v.second.value);
             cout << '\n';
         }
         
-        auto&& funcs = parser.symbol_table().funcs();
+        const auto& funcs = parser.symbol_table().funcs();
         if (funcs.size())
             cout << "\nFunctions:\n~~~~~~~~~~\n";
         for (const auto& f : funcs)
             cout << "  " << f.second << '\n';
 
-        auto&& lists = parser.symbol_table().lists();
+        const auto& lists = parser.symbol_table().lists();
         if (lists.size())
             cout << "\nLists:\n~~~~~~\n";
         for (const auto& l : lists) {
@@ -149,25 +144,25 @@ void Calculator::register_commands()
     };
 
     commands["run"] = [this] {
-        string fname;
-        if (cout << "file: " && getline(cin, fname))
+        std::string fname;
+        if (cout << "file: " && std::getline(cin, fname))
             run_file(fname);
     };
 
     commands["copy"] = [this] {
-        auto str = mps::str::to_string(parser.symbol_table().value_of("ans"));
-        mps::set_clipboard_text(str);
+        auto&& str = mps::str::to_string(parser.symbol_table().value_of("ans"));
+        mps::set_clipboard_text(std::move(str));
     };
 
     commands["copy,"] = [this] {
-        auto str = mps::str::to_string(parser.symbol_table().value_of("ans"));
-        mps::set_clipboard_text(mps::str::format_number_EU(str));
+        auto&& str = mps::str::to_string(parser.symbol_table().value_of("ans"));
+        mps::set_clipboard_text(mps::str::format_number_EU(std::move(str)));
     };
 
     commands["table"] = [this] {
-        string func = mps::get_str("Function: ");
-        double low = mps::get_num<double>("Low: ");
-        double high = mps::get_num<double>("High: ");
+        // const auto func = mps::get_str("Function: ");
+        // double low = mps::get_num<double>("Low: ");
+        // double high = mps::get_num<double>("High: ");
         cout << "Sorry, table feature not implemented yet.\n";
     };
 
@@ -205,13 +200,15 @@ void Calculator::register_commands()
             }
             cin.ignore();
         }
-        cout << "0x" << hex << val << dec << '\n';
+        cout << "0x" << std::hex << val << std::dec << '\n';
     };
 
     commands["exp"] = [this] {
         if (!parser.has_result())
             return;
-        auto && n = parser.result();
-        cout << abs(n) << "*e^(" << deg(arg(n)) << "deg)i\n";
+        cout << abs(parser.result()) 
+             << "*e^(" 
+             << deg(arg(parser.result())) 
+             << "deg)i\n";
     };
 }

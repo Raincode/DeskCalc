@@ -3,6 +3,7 @@
 #include <functional>
 #include <stdexcept>
 #include <sstream>
+#include <utility>
 
 class ErrorReporter {
 public:

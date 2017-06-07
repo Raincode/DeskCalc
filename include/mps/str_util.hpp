@@ -73,7 +73,7 @@ bool starts_with(const std::string& str, const std::string& tail)
 
 inline bool isvowel(char ch)
 {
-    ch = std::tolower(ch);
+    ch = static_cast<char>(std::tolower(ch));
     return ch == 'a' || ch == 'e' || ch == 'i' || ch == 'o' || ch == 'u';
 }
 
@@ -184,7 +184,7 @@ std::string single_ws(const std::string& str)
 
 std::string tolower(std::string s)
 {
-    std::transform(begin(s), end(s), begin(s), [](char c){return std::tolower(c);});
+    std::transform(begin(s), end(s), begin(s), [](char c){return static_cast<char>(std::tolower(c));});
     return s;
 }
 
@@ -192,7 +192,7 @@ std::string tolower(std::string s)
 
 std::string toupper(std::string s)
 {
-    std::transform(begin(s), end(s), begin(s), [](char c){return std::toupper(c);});
+    std::transform(begin(s), end(s), begin(s), [](char c){return static_cast<char>(std::toupper(c));});
     return s;
 }
 

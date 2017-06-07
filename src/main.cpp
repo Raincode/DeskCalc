@@ -2,22 +2,20 @@
 #include <stdexcept>
 #include <map>
 
+#include <gsl\gsl>
+
 #include "Calculator.hpp"
 
 int main(int argc, char* argv[])
-try
-{
+try {
     Calculator calc;
     calc.run(argc, argv);
-    return 0;
 }
-catch (std::runtime_error& e)
-{
-    std::cerr << e.what() << std::endl;
+catch (const std::runtime_error& e) {
+    std::cerr << e.what() << '\n';
     return -1;
 }
-catch (...)
-{
-    std::cerr << "Unknown exception!" << std::endl;
+catch (...) {
+    std::cerr << "Unknown exception!\n";
     return -2;
 }

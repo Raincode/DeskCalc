@@ -2,11 +2,26 @@
 
 #include <map>
 #include <string>
+#include <experimental/string_view>
 
 #include "mps/stl_util.hpp"
 
 #include "Function.hpp"
 #include "types.hpp"
+
+enum class VarAccess {
+    Mutable,
+    Const
+};
+
+struct Var {
+    Var() = default;
+    Var(Complex v, VarAccess acc)
+        : value{std::move(v)}, access{acc} { }
+
+    Complex value;
+    VarAccess access{};
+};
 
 class SymbolTable {
 public:
@@ -17,6 +32,7 @@ public:
 
     bool is_reserved_func(const std::string& name) const;
 
+    void set_const(ConstStrRef name, Complex value);
     void set_var(ConstStrRef name, Complex value);
     void set_list(ConstStrRef name, List&& list);
     void set_func(ConstStrRef name, Function func);
@@ -25,6 +41,7 @@ public:
     const List& list(ConstStrRef var) const;
     Complex call_func(ConstStrRef func, const List& args) const;
 
+    bool is_const(ConstStrRef name) const;
     bool has_var(ConstStrRef name) const;
     bool has_list(ConstStrRef name) const;
     bool has_func(ConstStrRef name) const;
@@ -40,7 +57,7 @@ public:
     void clear_funcs();
     void clear_lists();
 
-    const std::map<std::string, Complex>& vars() const { return varTable; }
+    const std::map<std::string, Var>& vars() const { return varTable; }
     const std::map<std::string, List>& lists() const { return listTable; }
     const std::map<std::string, Function>& funcs() const { return funcTable; }
 
@@ -49,7 +66,10 @@ private:
 
     static const FuncMap defaultFuncTable;
 
-    std::map<std::string, Complex> varTable;
+    std::map<std::string, Var> varTable;
     std::map<std::string, List> listTable;
     std::map<std::string, Function> funcTable;
 };
+
+Var make_const_var(Complex value);
+Var make_var(Complex value);

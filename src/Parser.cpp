@@ -61,7 +61,7 @@ void Parser::func_def()
     expect(Kind::Assign);
     parse_func_term(func);
 
-    List test_args(func.numArgs(), 1);
+    const List test_args(func.numArgs(), 1);
     func(test_args);
 
     table.set_func(func.name(), func);
@@ -96,19 +96,13 @@ void Parser::deletion()
     do {
         del_symbol();
     } while (peek(Kind::String));
-
     hasResult = false;
-}
-
-static bool is_const(const std::string& var)
-{
-    return var == "pi" || var == "e" || var == "i" || var == "deg";
 }
 
 void Parser::del_symbol()
 {
-    auto& name = ident();
-    if (is_const(name))
+    const auto& name = ident();
+    if (table.is_const(name))
         error(name, " is a constant");
     if (table.is_reserved_func(name))
         error(name, " is a built-in function");
@@ -194,7 +188,7 @@ Complex Parser::prim()
 
 Complex Parser::resolve_str_tok()
 {
-    auto name = ident();
+    const auto name = ident();
     if (peek(Kind::LParen))
         return table.call_func(name, arg_list());
     else if (consume(Kind::Assign)) {
@@ -216,7 +210,7 @@ Complex Parser::resolve_str_tok()
 
 Complex Parser::var_def(const std::string& name)
 {
-    if (is_const(name))
+    if (table.is_const(name))
         error("Cannot override constant ", name);
     if (peek(Kind::LBracket)) {
         table.set_list(name, list());
@@ -224,7 +218,7 @@ Complex Parser::var_def(const std::string& name)
     }
     if (table.isset(name) && !table.has_var(name))
         error(name, " is already defined");
-    auto val = expr();
+    const auto val = expr();
     table.set_var(name, val);
     return varDefIsRes ? val : no_result();
 }
