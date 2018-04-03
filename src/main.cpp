@@ -1,8 +1,5 @@
 #include <iostream>
 #include <stdexcept>
-#include <map>
-
-#include <gsl\gsl>
 
 #include "Calculator.hpp"
 
