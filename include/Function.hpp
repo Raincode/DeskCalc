@@ -3,8 +3,6 @@
 #include <string>
 #include <vector>
 
-#include <gsl/string_span>
-
 #include "types.hpp"
 
 class SymbolTable;
