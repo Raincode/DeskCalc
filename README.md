@@ -52,6 +52,7 @@ make -j or ninja -jX
 >> sx(x); ux(x)
 1.36931
 0,456435
+
 // using negative values in list ranges is possible, but requires use of parentheses (-x) to be parsable as primary
 >> x = [for i=(-15),(-30):(-1) i]
 >> x
@@ -65,16 +66,16 @@ make -j or ninja -jX
 * Minimal list support
 
 ## Built-in Operators
-* Add '+'
-* Sub '-'
-* Mul '*'
-* Div '/'
-* Pow '^' or '**'
-* Floordiv '//' or 'div'
-* Mod '%' or 'mod'
-* Fac '!' (unary, suffix)
-* Neg '-' (unary, prefix)
-* Parallel impedance '||', where A || B == A*B/(A+B)
+* Add `+`
+* Sub `-`
+* Mul `*`
+* Div `/`
+* Pow `^` or `**`
+* Floordiv `//` or `div`
+* Mod `%` or `mod`
+* Fac `!` (unary, suffix)
+* Neg `-` (unary, prefix)
+* Parallel impedance `||`, where A || B == A*B/(A+B)
 
 ## Built-in Constants
 pi, e, i, deg (will convert to rad, so you can write sin(90deg))
