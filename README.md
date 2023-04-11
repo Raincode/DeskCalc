@@ -73,7 +73,7 @@ __Lists:__ avg, len, sum, sum2 (squared sum), sx (standard deviation), ux (stand
 
 __Complex:__ Re, Im, arg, abs, norm
 
-__Misc.:__ ln, log, sqr, sqrt, cbrt, round, ceil, floor, trunc
+__Misc.:__ ln, log, sqr, sqrt, cbrt, round, ceil, floor, trunc, sgn
 
 ## Commands
 * __copy:__ Copy the last result to clipboard using '.' as decimal point
