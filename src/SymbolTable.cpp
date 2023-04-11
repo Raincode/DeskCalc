@@ -159,7 +159,7 @@ void SymbolTable::add_constants()
     CHECK_SINGLE_ARG(f) \
     if (list.front().imag()) \
         throw std::runtime_error{ #f " not defined for complex numbers" }; \
-    return Complex{ (f)(list.front().real()) }; }
+    return Complex{ static_cast<double>((f)(list.front().real())) }; }
 
 using namespace std;
 using namespace temp;
@@ -178,6 +178,7 @@ const SymbolTable::FuncMap SymbolTable::defaultFuncTable{
     { "atanh", MAKE_COMPLEX_FUNC(atanh) },
     { "deg", MAKE_REAL_FUNC(deg) },
     { "rad", MAKE_REAL_FUNC(rad) },
+	{ "sgn", MAKE_REAL_FUNC(sign<double>) }, 
 
     { "CtoK", MAKE_REAL_FUNC(CtoK) },
     { "KtoC", MAKE_REAL_FUNC(KtoC) },

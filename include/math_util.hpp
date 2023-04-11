@@ -33,6 +33,12 @@ Complex standard_uncertainty(const List& list);
 Complex sqr(const Complex& num);
 Complex pretty_pow(const Complex& base, const Complex& exp);
 
+// https://stackoverflow.com/questions/1903954/is-there-a-standard-sign-function-signum-sgn-in-c-c
+template <typename T>
+constexpr int sign(T val) {
+    return (T(0) < val) - (val < T(0));
+}
+
 namespace temp {
     constexpr double absoluteZero{ -273.1499999999999773 };
 

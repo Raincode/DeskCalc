@@ -1,6 +1,18 @@
 # DeskCalc
 Desk(top) Calculator inspired by "The C++ Programming Language" (Stroustrup)
 
+## Example Build Guide with CMake
+Assumes you have a suitable compiler toolchain and cmake installed.
+```
+git clone ...
+mkdir DeskCalc/build
+cd DeskCalc/build
+cmake ..
+make -j or ninja -jX
+./Tests
+./DeskCalc
+```
+
 ## Quick Start Guide
 ```
 // calculate arbitrary expressions
