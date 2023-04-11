@@ -16,6 +16,10 @@ SymbolGuard::~SymbolGuard()
 
 void SymbolGuard::shadow_var(const std::string& name, Complex tempVal)
 {
+	if (table.has_list(name)) {
+		throw std::runtime_error("Attempt to use reserved list identifier as another symbol");
+	}
+	
     if (table.has_var(name)) {
         const auto val = table.value_of(name);
         varCache[name] = val;

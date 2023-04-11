@@ -236,10 +236,10 @@ List Parser::list()
     if (consume(Kind::For)) { // [for var=start, end:step loopExpression]
         auto var = ident();
         expect(Kind::Assign);
-        auto start = prim().real();
+        double start = prim().real();
 
         expect(Kind::Comma);
-        auto end = prim().real();
+        double end = prim().real();
         double step{ 1 };
         if (consume(Kind::Colon))
             step = prim().real();
@@ -247,10 +247,16 @@ List Parser::list()
         Function f{ "__internal__", table };
         f.add_var(var);
         parse_func_term(f);
-        if (start < end && step <= 0 || start > end && step >= 0)
-            error("Infinite loop");
-        for (auto i = start; i <= end; i += step)
-            l.emplace_back(f({ Complex(i) }));
+
+		if (start < end && step > 0) {
+			for (auto i = start; i <= end; i += step)
+				l.emplace_back(f({ Complex(i) }));
+		} else if (start > end && step < 0) {
+			for (auto i = start; i >= end; i += step)
+				l.emplace_back(f({ Complex(i) }));
+		} else {
+			error("Infinite loop");
+		}
     }
     else
         l = list_elem();
