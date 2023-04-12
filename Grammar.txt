@@ -1,0 +1,148 @@
+///////////////////////////////////////////////////////////////////////////////
+
+left-associative: PLUS, MINUS
+left-associative: MUL, DIV, FLOORDIV, MOD, PARALLEL
+
+///////////////////////////////////////////////////////////////////////////////
+Grammar
+///////////////////////////////////////////////////////////////////////////////
+
+start -> full_stmt start
+       | END
+
+full_stmt -> statement PRINT
+
+statement -> func_def
+           | deletion
+		   | expr
+
+func_def -> FUNC string param_list ASSIGN func_term
+
+param_list -> LPAREN params RPAREN
+
+params -> string COMMA params
+        | string
+
+func_term -> expr
+
+deletion -> DELETE strings
+
+strings -> strings string
+         | string
+
+list_def -> string ASSIGN list
+
+list -> LBRACKET list_elem RBRACKET
+      | LBRACKET FOR string ASSIGN primary COMMA primary func_term RBRACKET
+	  | LBRACKET FOR string ASSIGN primary COMMA primary COLON primary func_term RBRACKET
+
+var_def -> string ASSIGN expr
+
+arg_list -> 
+
+list_elem -> 
+
+expr -> expr PLUS term
+      | expr MINUS term
+      | term
+			
+term -> term MUL sign
+      | term DIV sign
+	  | term FLOORDIV sign
+	  | term MOD sign
+	  | term PARALLEL sign
+	  | sign
+	  
+sign -> MINUS postfix
+      | PLUS postfix
+	  | postfix
+
+postfix -> primary POW sign
+         | primary IDENT
+		 | primary parenthesised
+		 | primary FACT
+		 | primary
+		 
+primary -> UREAL
+         | IDENT
+		 | func_call
+		 | parenthesised
+		
+IDENT -> variable | func_call
+
+variable -> STRING
+
+func_call -> STRING arg_list
+
+arg_list -> LPAREN args RPAREN
+
+args -> arg COMMA args
+      | arg
+	  
+arg -> list_call
+     | primary
+		 
+parenthesised -> LPAREN expr RPAREN
+		 
+UREAL -> DIGITS DOT DIGITS
+      | DIGITS DOT
+	  | DOT DIGITS
+	  | UREAL EXP DIGITS
+	  | UREAL EXP PLUS DIGITS
+	  | UREAL EXP MINUS DIGITS
+	  | DIGITS
+
+DIGITS -> DIGITS DIGIT
+        | DIGIT
+
+DIGIT -> '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9'
+
+EXP -> 'e' | 'E'
+
+DOT -> '.'
+
+STRING -> ALPHA CHARS
+        | UNDERSCORE CHARS
+		| CHARS
+
+CHARS -> CHARS CHAR
+       | CHAR
+
+CHAR -> ALNUM | UNDERSCORE
+
+ALNUM -> DIGIT | ALPHA
+
+ALPHA -> 'a' | 'b' | 'c' | ... | 'z' | 'A' | 'B' | ... | 'Z'
+
+PLUS		-> '+'
+MINUS		-> '-'
+MUL			-> '*'
+DIV			-> '/'
+FLOORDIR	-> '//'	| 'div'
+MOD			-> '%'	| 'mod'
+FACT		-> '!'
+LPAREN		-> '('
+RPAREN		-> ')'
+PARALLEL	-> '||'
+POW			-> '^' | '**'
+COMMA		-> ','
+COLON		-> ':'
+PRINT		-> '\n' | ';'
+FUNC		-> 'fn'
+DELETE		-> 'del'
+
+///////////////////////////////////////////////////////////////////////////////
+Compact grammar
+///////////////////////////////////////////////////////////////////////////////
+grammar MathParser;
+
+expr:			term ((PLUS|MINUS) term)*
+term:			sign ((MUL|DIV|FLOORDIV|MOD|PARALLEL) sign)*
+sign:			(MINUS|PLUS)? postfix
+postifx:		primary (POW sign|identifier|parenthesised|FACT)*
+primary:		number|parenthesised
+parenthesised:	LPAREN expr RPAREN
+number:			...
+string:			('_'|alpha) ('_'|alpha|digit)*
+alpha:			['a'-'z'] | ['A'-'Z']
+digit:			['0'-'9']
