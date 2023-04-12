@@ -64,13 +64,11 @@ postfix -> primary POW sign
          | primary
 		 
 primary -> UREAL
-         | IDENT
+         | var
          | func_call
          | parenthesised
 		
-IDENT -> variable | func_call
-
-variable -> STRING
+var -> STRING
 
 func_call -> STRING arg_list
 
