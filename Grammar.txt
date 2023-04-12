@@ -13,6 +13,7 @@ start -> full_stmt start
 full_stmt -> statement PRINT
 
 statement -> func_def
+           | list_def
            | deletion
            | expr
 
@@ -38,9 +39,8 @@ list -> LBRACKET list_elem RBRACKET
 
 var_def -> string ASSIGN expr
 
-arg_list -> 
-
-list_elem -> 
+list_elem -> expr COMMA list_elem
+           | expr
 
 expr -> expr PLUS term
       | expr MINUS term
