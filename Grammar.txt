@@ -21,27 +21,27 @@ statement  -> func_def
             | deletion
             | expr
 
-func_def   -> FUNC IDENT param_list ASSIGN func_term
+func_def   -> FUNC ident param_list ASSIGN func_term
 
 param_list -> LPAREN params RPAREN
 
-params     -> IDENT COMMA params
-            | IDENT
+params     -> ident COMMA params
+            | ident
 
 func_term  -> expr
 
 deletion   -> DELETE strings
 
-strings    -> strings IDENT
-            | IDENT
+strings    -> strings ident
+            | ident
 
-list_def   -> IDENT ASSIGN list
+list_def   -> ident ASSIGN list
 
 list       -> LBRACKET list_elem RBRACKET
-            | LBRACKET FOR IDENT ASSIGN primary COMMA primary func_term RBRACKET
-            | LBRACKET FOR IDENT ASSIGN primary COMMA primary COLON primary func_term RBRACKET
+            | LBRACKET FOR ident ASSIGN primary COMMA primary func_term RBRACKET
+            | LBRACKET FOR ident ASSIGN primary COMMA primary COLON primary func_term RBRACKET
 
-var_def    -> IDENT ASSIGN expr
+var_def    -> ident ASSIGN expr
 
 list_elem  -> expr COMMA list_elem
             | expr
@@ -68,14 +68,14 @@ postfix    -> primary POW sign
             | primary FACT
             | primary
 		 
-primary    -> UREAL
+primary    -> ureal
             | var
             | func_call
             | enc_expr
 		
-var        -> IDENT
+var        -> ident
 
-func_call  -> IDENT arg_list
+func_call  -> ident arg_list
 
 arg_list   -> LPAREN args RPAREN
 
@@ -87,27 +87,28 @@ arg        -> list_call
 		 
 enc_expr   -> LPAREN expr RPAREN
 		 
-UREAL      -> DIGITS DOT DIGITS
-            | DIGITS DOT
-            | DOT DIGITS
-            | UREAL EXP DIGITS
-            | UREAL EXP PLUS DIGITS
-            | UREAL EXP MINUS DIGITS
-            | DIGITS
+ureal      -> digits DOT digits
+            | digits DOT
+            | DOT digits
+            | ureal EXP digits
+            | ureal EXP PLUS digits
+            | ureal EXP MINUS digits
+            | digits
 
-DIGITS     -> DIGITS DIGIT
+digits     -> digits DIGIT
             | DIGIT
 
-IDENT      -> ALPHA CHARS
-            | UNDERSCORE CHARS
+ident      -> ALPHA chars
+            | UNDERSCORE chars
 
-CHARS      -> CHARS CHAR
-            | CHAR
+chars      -> chars char
+            | char
 
-CHAR       -> DIGIT | ALPHA | UNDERSCORE
+char       -> DIGIT | ALPHA | UNDERSCORE
 
 ALPHA      -> 'a' | 'b' | 'c' | ... | 'z' | 'A' | 'B' | ... | 'Z'
 DIGIT      -> '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9'
+UNDERSCORE -> '_'
 EXP        -> 'e' | 'E'
 DOT        -> '.'
 PLUS       -> '+'
